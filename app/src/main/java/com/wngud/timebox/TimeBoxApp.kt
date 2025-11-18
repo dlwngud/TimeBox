@@ -1,7 +1,23 @@
 package com.wngud.timebox
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import com.wngud.timebox.navigation.TimeBoxNavHost
 
-@HiltAndroidApp
-class TimeBoxApp: Application()
+@Composable
+fun TimeBoxApp() {
+    val navController = rememberNavController()
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        TimeBoxNavHost(
+            navController = navController
+        )
+    }
+}
