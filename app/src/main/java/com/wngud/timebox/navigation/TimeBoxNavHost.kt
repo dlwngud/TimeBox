@@ -13,42 +13,42 @@ import com.wngud.timebox.presentation.stats.StatsScreen
 @Composable
 fun TimeBoxNavHost(
     navController: NavHostController,
-    startDestination: String = Screen.OnBoarding.route
+    startDestination: Screen = Screen.OnBoarding
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
 
         // 온보딩 → 완료 시 Home으로 이동
-        composable(Screen.OnBoarding.route) {
+        composable<Screen.OnBoarding> {
             OnBoardingScreen(
                 onComplete = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.OnBoarding.route) { inclusive = true }
+                    navController.navigate(Screen.Home) {
+                        popUpTo(Screen.OnBoarding) { inclusive = true }
                     }
                 }
             )
         }
 
         // 홈
-        composable(Screen.Home.route) {
+        composable<Screen.Home> {
             HomeScreen(
-                onNavigateToStats = { navController.navigate(Screen.Stats.route) },
-                onNavigateToBrainDump = { navController.navigate(Screen.BrainDump.route) },
-                onNavigateToSetting = { navController.navigate(Screen.Setting.route) }
+                onNavigateToStats = { navController.navigate(Screen.Stats) },
+                onNavigateToBrainDump = { navController.navigate(Screen.BrainDump) },
+                onNavigateToSetting = { navController.navigate(Screen.Setting) }
             )
         }
 //
         // 통계
-        composable(Screen.Stats.route) {
+        composable<Screen.Stats> {
             StatsScreen(onBack = { navController.popBackStack() })
         }
 
         // 브레인덤프
-        composable(Screen.BrainDump.route) {
+        composable<Screen.BrainDump> {
             BrainDumpScreen(onBack = { navController.popBackStack() })
         }
 
         // 설정
-        composable(Screen.Setting.route) {
+        composable<Screen.Setting> {
             SettingScreen(onBack = { navController.popBackStack() })
         }
     }

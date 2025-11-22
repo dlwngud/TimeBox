@@ -1,13 +1,22 @@
 package com.wngud.timebox.navigation
 
-sealed class Screen(val route: String) {
-    data object OnBoarding : Screen("onboarding")
+import kotlinx.serialization.Serializable
 
-    data object Home : Screen("home")
+@Serializable
+sealed interface Screen {
 
-    data object Stats : Screen("stats")
+    @Serializable
+    data object OnBoarding : Screen
 
-    data object BrainDump : Screen("braindump")
+    @Serializable
+    data object Home : Screen
 
-    data object Setting : Screen("setting")
+    @Serializable
+    data object Stats : Screen
+
+    @Serializable
+    data object BrainDump : Screen
+
+    @Serializable
+    data object Setting : Screen
 }
