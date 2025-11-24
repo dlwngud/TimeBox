@@ -5,6 +5,7 @@ plugins {
 
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -68,4 +69,6 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
 
     implementation("androidx.navigation:navigation-compose:2.9.6")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }
