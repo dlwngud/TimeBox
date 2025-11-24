@@ -16,7 +16,9 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimeBoxerTopBar() {
+fun TimeBoxerTopBar(
+    onNavigateToSettings: () -> Unit = {},
+) {
     TopAppBar(
         title = {
             Text(
@@ -27,11 +29,19 @@ fun TimeBoxerTopBar() {
             )
         },
         actions = {
-            IconButton(onClick = { /* Settings */ }) {
-                Icon(Icons.Default.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.onBackground)
+            IconButton(onClick = onNavigateToSettings) {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
             }
             IconButton(onClick = { /* Calendar */ }) {
-                Icon(Icons.Default.DateRange, contentDescription = "Calendar", tint = MaterialTheme.colorScheme.onBackground)
+                Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = "Calendar",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)

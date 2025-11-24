@@ -53,6 +53,7 @@ import com.wngud.timebox.ui.theme.TimeBoxTheme
 import java.time.LocalTime
 
 val LocalDragTargetInfo = compositionLocalOf { DragAndDropState() }
+
 class DragAndDropState {
     var isDragging by mutableStateOf(false)
     var draggedEvent by mutableStateOf<ScheduleEvent?>(null)
@@ -89,11 +90,31 @@ fun HomeScreen(
     val dragAndDropState = remember { DragAndDropState() }
 
     // Fake Data
-    val fakeEvents = remember { mutableStateListOf(
-        ScheduleEvent("1", "프로젝트 기획", LocalTime.of(9, 0), LocalTime.of(11, 0), EventColorType.GREEN),
-        ScheduleEvent("2", "디자인 리뷰", LocalTime.of(11, 0), LocalTime.of(12, 0), EventColorType.BLUE),
-        ScheduleEvent("3", "점심 식사", LocalTime.of(12, 0), LocalTime.of(13, 0), EventColorType.GREEN)
-    )}
+    val fakeEvents = remember {
+        mutableStateListOf(
+            ScheduleEvent(
+                "1",
+                "프로젝트 기획",
+                LocalTime.of(9, 0),
+                LocalTime.of(11, 0),
+                EventColorType.GREEN
+            ),
+            ScheduleEvent(
+                "2",
+                "디자인 리뷰",
+                LocalTime.of(11, 0),
+                LocalTime.of(12, 0),
+                EventColorType.BLUE
+            ),
+            ScheduleEvent(
+                "3",
+                "점심 식사",
+                LocalTime.of(12, 0),
+                LocalTime.of(13, 0),
+                EventColorType.GREEN
+            )
+        )
+    }
     val fakeStats = DailyStats("6h 42m", 3, 3, 85, 12)
     val fakeTasks = listOf(
         Task("1", "프로젝트 기획서 초안 완료", true),
@@ -104,7 +125,7 @@ fun HomeScreen(
     CompositionLocalProvider(LocalDragTargetInfo provides dragAndDropState) {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background, // Theme Color 사용
-            topBar = { TimeBoxerTopBar() },
+            topBar = { TimeBoxerTopBar(onNavigateToSetting) },
             floatingActionButton = {
                 // FAB를 다크모드 토글 버튼으로 사용
                 FloatingActionButton(
@@ -126,12 +147,7 @@ fun HomeScreen(
                 stats = fakeStats,
                 tasks = fakeTasks,
                 events = fakeEvents,
-                onEventDropped = { eventId, newStartTime, newEndTime ->
-                    val index = fakeEvents.indexOfFirst { it.id == eventId }
-                    if (index != -1) {
-                        fakeEvents[index] = fakeEvents[index].copy(startTime = newStartTime, endTime = newEndTime)
-                    }
-                },
+                onNavigateToStats = onNavigateToStats,
                 userName = "이아하"
             )
         }
@@ -144,7 +160,7 @@ fun TimeBoxerContent(
     stats: DailyStats,
     tasks: List<Task>,
     events: List<ScheduleEvent>,
-    onEventDropped: (String, LocalTime, LocalTime) -> Unit,
+    onNavigateToStats: () -> Unit,
     userName: String
 ) {
     val scrollState = rememberScrollState()
@@ -156,7 +172,7 @@ fun TimeBoxerContent(
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-        DailySummaryCard(stats, {})
+        DailySummaryCard(stats, onNavigateToStats)
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
@@ -177,6 +193,6 @@ fun TimeBoxerContent(
 @Composable
 fun HomeScreenPreview() {
     TimeBoxTheme {
-        HomeScreen({},{},{})
+        HomeScreen({}, {}, {})
     }
 }
