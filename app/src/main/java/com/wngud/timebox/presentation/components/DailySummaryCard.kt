@@ -42,6 +42,7 @@ fun DailySummaryCard(stats: DailyStats, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() }
     ) {
         Box(
