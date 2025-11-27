@@ -89,15 +89,7 @@ fun BrainDumpContent(
                         )
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "뒤로가기",
-                            tint = Color(0xFF111111)
-                        )
-                    }
-                },
+                navigationIcon = { /* ... */ },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color(0xFFF8F9FB)
                 )
@@ -106,28 +98,34 @@ fun BrainDumpContent(
         containerColor = Color(0xFFF8F9FB) // 전체 배경색
     ) { paddingValues ->
 
-        // Box를 사용하여 리스트 위에 하단 입력창을 겹쳐서 배치 (혹은 Column으로 분리 가능)
-        // 여기서는 Column + Weight 구조를 사용하여 입력창이 항상 바닥에 붙도록 함
-        Column(
+        // 1. Box를 사용하여 LazyColumn과 입력창을 겹치게 배치합니다. (레이아웃 구조: LazyColumn + Box(TextField))
+        Box(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
-                .imePadding() // 키보드 올라올 때 패딩 처리
+                .padding(top = paddingValues.calculateTopPadding()) // TopBar 높이만큼만 상단 패딩 적용
         ) {
-            // 메인 컨텐츠 영역 (스크롤 가능)
+            // 2. 키보드 높이 계산 (베스트 프랙티스: WindowInsets.ime.asPaddingValues() 사용)
+            val imeBottomPadding = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+
+            // 3. 메인 컨텐츠 영역 (LazyColumn)
             LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+                modifier = Modifier.fillMaxSize(),
+                // LazyColumn의 contentPadding에 키보드 높이와 BottomBar 높이(혹은 입력창 높이)를 모두 반영합니다.
+                contentPadding = PaddingValues(
+                    horizontal = 16.dp,
+                    vertical = 20.dp,
+                    // Bottom Padding 계산:
+                    // 현재 입력창이 차지하는 공간(56dp+16dp*2 = 약 88dp) + 키보드 높이
+                    // imeBottomPadding을 사용하여, 키보드가 나타나면 이 값이 0보다 커져 리스트가 밀려 올라갑니다.
+                ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // 상단 설명 텍스트
                 item {
                     Text(
-                        text = "오늘 하고 싶은 일, 걱정, 아이디어…\n자유롭게 적어보세요!",
+                        text = "오늘 하고 싶은 일, 걱정, 아이디어… 자유롭게 적어보세요!",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = Color(0xFF8D94A0), // 연한 회색/하늘색 톤
+                            color = Color(0xFF8D94A0),
                             fontSize = 14.sp,
                             lineHeight = 20.sp
                         ),
@@ -137,18 +135,20 @@ fun BrainDumpContent(
                             .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
                     )
                 }
-
                 // 리스트 아이템들
                 items(uiState.items) { item ->
                     BrainDumpItemCard(text = item)
                 }
             }
 
-            // 하단 입력창 영역
+            // 4. 하단 입력창 영역 (Alignment.BottomCenter에 고정)
             BrainDumpInputArea(
                 text = uiState.inputText,
                 onValueChange = onInputChange,
-                onSendClick = onSendClick
+                onSendClick = onSendClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter) // 하단 중앙에 고정
             )
         }
     }
@@ -200,22 +200,21 @@ fun BrainDumpItemCard(text: String) {
 fun BrainDumpInputArea(
     text: String,
     onValueChange: (String) -> Unit,
-    onSendClick: () -> Unit
+    onSendClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     // 하단 영역 컨테이너
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
         // 텍스트 필드 배경 (흰색 둥근 박스)
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .clip(RoundedCornerShape(28.dp)) // 높이의 절반
-                .background(Color.White)
-                .padding(start = 20.dp, end = 8.dp), // 내부 패딩
+                .background(Color(0xFFF8F9FB)) // 스캐폴드 배경색과 맞춥니다.
+                .padding(horizontal = 16.dp, vertical = 8.dp), // 상하좌우 패딩 적용
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 입력 필드 (BasicTextField로 커스텀 스타일링)
@@ -237,7 +236,8 @@ fun BrainDumpInputArea(
                         fontSize = 15.sp
                     ),
                     singleLine = true,
-                    cursorBrush = SolidColor(Color(0xFF186EF2))
+                    cursorBrush = SolidColor(Color(0xFF186EF2)),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
