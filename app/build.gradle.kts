@@ -70,5 +70,13 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.9.6")
 
+    // @Serializable을 위한 kotlinx.serialization 플러그인 설정 필수
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
+    // Nav3 Core
+    implementation("androidx.navigation3:navigation3-runtime:1.0.0")
+    implementation("androidx.navigation3:navigation3-ui:1.0.0")
+
+    // ViewModel Scoping (선택 사항이지만, 전문 앱에서는 필수)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:1.0.0")
 }
