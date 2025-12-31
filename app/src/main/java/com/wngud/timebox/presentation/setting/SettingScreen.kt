@@ -250,6 +250,7 @@ fun SettingItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(72.dp)
+            .clip(RoundedCornerShape(20.dp))
             .then(
                 if (onClick != null && enabled) Modifier.clickable { onClick() } else Modifier
             ),
