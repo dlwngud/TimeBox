@@ -46,6 +46,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.Duration // Duration import 추가
 import kotlin.math.roundToInt
+import androidx.compose.material.icons.filled.Check // 체크 아이콘을 위해 추가
 
 val LocalDragTargetInfo = compositionLocalOf { DragAndDropState() }
 
@@ -118,6 +119,15 @@ fun HomeScreen(
         )
     }
 
+    // Fake Tasks - mutableStateListOf로 변경
+    val fakeTasks = remember {
+        mutableStateListOf(
+            Task("1", "기획안 초안 작성 완료하기", false),
+            Task("2", "팀 회의록 정리", false),
+            Task("3", "디자인 시스템 검토", false)
+        )
+    }
+
     val onEventMove: (ScheduleEvent, LocalTime) -> Unit = { event, newTime ->
         val index = fakeEvents.indexOfFirst { it.id == event.id }
         if (index != -1) {
@@ -135,6 +145,14 @@ fun HomeScreen(
         dragAndDropState.currentCardCoordinates = null
         dragAndDropState.draggingEventId = null
         dragAndDropState.currentDropTargetTime = null
+    }
+
+    val onTaskCheckChanged: (Task, Boolean) -> Unit = { task, isChecked ->
+        val index = fakeTasks.indexOfFirst { it.id == task.id }
+        if (index != -1) {
+            val updatedTask = task.copy(isCompleted = isChecked)
+            fakeTasks[index] = updatedTask
+        }
     }
 
     CompositionLocalProvider(LocalDragTargetInfo provides dragAndDropState) {
@@ -158,16 +176,13 @@ fun HomeScreen(
             TimeBoxerContent(
                 modifier = Modifier.padding(innerPadding),
                 stats = DailyStats("3.5h", 5, 8, 85, 12), // Fake Data
-                tasks = listOf(
-                    Task("1", "기획안 초안 작성 완료하기", false),
-                    Task("2", "팀 회의록 정리", false),
-                    Task("3", "디자인 시스템 검토", false)
-                ), // Fake Data
+                tasks = fakeTasks,
                 events = fakeEvents,
                 onNavigateToStats = onNavigateToStats,
                 userName = "사용자",
                 dragAndDropState = dragAndDropState,
-                onEventMove = onEventMove
+                onEventMove = onEventMove,
+                onTaskCheckChanged = onTaskCheckChanged
             )
 
             // Floating dragged item visual - 여기로 이동하여 모든 UI 위에 렌더링되도록 함
@@ -200,7 +215,8 @@ fun TimeBoxerContent(
     onNavigateToStats: () -> Unit,
     userName: String,
     dragAndDropState: DragAndDropState,
-    onEventMove: (ScheduleEvent, LocalTime) -> Unit
+    onEventMove: (ScheduleEvent, LocalTime) -> Unit,
+    onTaskCheckChanged: (Task, Boolean) -> Unit // onTaskCheckChanged 추가
 ) {
     val scrollState = rememberScrollState()
 
@@ -237,7 +253,7 @@ fun TimeBoxerContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Big Three Tasks
-        BigThreeSectionNew(tasks)
+        BigThreeSectionNew(tasks, onTaskCheckChanged) // onTaskCheckChanged 전달
 
         Spacer(modifier = Modifier.height(28.dp))
 
@@ -366,18 +382,18 @@ fun StatsItem(icon: String, label: String, value: String) {
 }
 
 @Composable
-fun BigThreeSectionNew(tasks: List<Task>) {
+fun BigThreeSectionNew(tasks: List<Task>, onTaskCheckChanged: (Task, Boolean) -> Unit) { // onTaskCheckChanged 추가
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         tasks.forEach { task ->
-            BigThreeTaskItem(task)
+            BigThreeTaskItem(task, onTaskCheckChanged) // onTaskCheckChanged 전달
         }
     }
 }
 
 @Composable
-fun BigThreeTaskItem(task: Task) {
+fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) { // onToggleComplete 추가
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -399,10 +415,21 @@ fun BigThreeTaskItem(task: Task) {
                     .size(24.dp)
                     .clip(RoundedCornerShape(6.dp))
                     .background(
-                        if (task.isCompleted) Color(0xFF4CAF50)
-                        else Color(0xFFE0E0E0)
+                        if (task.isCompleted) Color(0xFF4CAF50) // 체크 시 녹색
+                        else Color(0xFFE0E0E0) // 미체크 시 회색
                     )
-            )
+                    .clickable { onToggleComplete(task, !task.isCompleted) }, // 클릭 시 상태 토글
+                contentAlignment = Alignment.Center
+            ) {
+                if (task.isCompleted) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Completed",
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
 
@@ -412,16 +439,7 @@ fun BigThreeTaskItem(task: Task) {
                 color = Color(0xFF1A1A1A),
                 modifier = Modifier.weight(1f)
             )
-
-            Text(
-                text = "AI 추천",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF2196F3),
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color(0xFFE3F2FD))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            )
+            // "AI 추천" 텍스트 제거
         }
     }
 }
@@ -611,10 +629,24 @@ fun TimelineSectionNew(
                             if (draggedEvent != null && targetTime != null) {
                                 onEventMove(draggedEvent, targetTime)
                             }
-                            dragAndDropState.stopDrag() // 드래그 상태 리셋
+                            // 드롭 완료 후 상태 초기화
+                            dragAndDropState.draggedEvent = null
+                            dragAndDropState.dragOffset = Offset.Zero
+                            dragAndDropState.dragStartingPoint = Offset.Zero
+                            dragAndDropState.currentCardCoordinates = null
+                            dragAndDropState.draggingEventId = null
+                            dragAndDropState.currentDropTargetTime = null
+                            dragAndDropState.stopDrag() // isDragging = false
                         },
                         onDragCancel = {
-                            dragAndDropState.stopDrag() // 드래그 상태 리셋
+                            // 드래그 취소 시 상태 초기화
+                            dragAndDropState.draggedEvent = null
+                            dragAndDropState.dragOffset = Offset.Zero
+                            dragAndDropState.dragStartingPoint = Offset.Zero
+                            dragAndDropState.currentCardCoordinates = null
+                            dragAndDropState.draggingEventId = null
+                            dragAndDropState.currentDropTargetTime = null
+                            dragAndDropState.stopDrag() // isDragging = false
                         },
                         onDrag = { change, _ ->
                             timelineRootCoordinates?.let { rootCoords ->
