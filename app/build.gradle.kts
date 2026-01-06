@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 
-    id("com.google.devtools.ksp")
+    id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
@@ -64,8 +64,8 @@ dependencies {
 
     // hilt
     implementation("com.google.dagger:hilt-android:2.57.2")
-    ksp("com.google.dagger:hilt-android-compiler:2.57.2")
-    ksp("androidx.hilt:hilt-compiler:1.3.0")
+    kapt("com.google.dagger:hilt-android-compiler:2.57.2")
+    kapt("androidx.hilt:hilt-compiler:1.3.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
 
     implementation("androidx.navigation:navigation-compose:2.9.6")
@@ -79,4 +79,10 @@ dependencies {
 
     // ViewModel Scoping (선택 사항이지만, 전문 앱에서는 필수)
     implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:1.0.0")
+
+    // Room
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
 }
