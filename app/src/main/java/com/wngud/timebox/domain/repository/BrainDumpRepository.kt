@@ -1,4 +1,11 @@
 package com.wngud.timebox.domain.repository
 
-class BrainDumpRepository {
+import com.wngud.timebox.data.local.BrainDumpEntity
+import kotlinx.coroutines.flow.Flow
+
+interface BrainDumpRepository {
+    suspend fun insertBrainDumpItem(item: BrainDumpEntity)
+    fun getBrainDumpItems(): Flow<List<BrainDumpEntity>>
+    suspend fun deleteBrainDumpItem(itemId: Long)
+    suspend fun deleteAllBrainDumpItems()
 }
