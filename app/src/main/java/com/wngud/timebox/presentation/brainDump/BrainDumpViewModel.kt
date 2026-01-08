@@ -2,6 +2,7 @@ package com.wngud.timebox.presentation.brainDump
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.wngud.timebox.data.local.BrainDumpEntity
 import com.wngud.timebox.data.local.toBrainDumpItem
 import com.wngud.timebox.domain.repository.BrainDumpRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -59,6 +60,48 @@ class BrainDumpViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoading = false, error = e.localizedMessage) }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // 3. Intent 처리 (로직 처리)
+    // ------------------------------------------------------------------------
+    fun processIntent(intent: BrainDumpIntent) {
+        when (intent) {
+            is BrainDumpIntent.InputTextChanged -> {
+                _uiState.update { it.copy(inputText = intent.newText) }
+            }
+            BrainDumpIntent.SendClick -> {
+                if (_uiState.value.inputText.isNotBlank()) {
+                    val newItemContent = _uiState.value.inputText
+                    viewModelScope.launch {
+                        try {
+                            repository.insertBrainDumpItem(BrainDumpEntity(content = newItemContent))
+                            _uiState.update { it.copy(inputText = "") } // 입력창 초기화
+                        } catch (e: Exception) {
+                            _uiState.update { it.copy(error = e.localizedMessage) }
+                        }
+                    }
+                }
+            }
+            is BrainDumpIntent.DeleteItem -> {
+                viewModelScope.launch {
+                    try {
+                        repository.deleteBrainDumpItem(intent.id)
+                    } catch (e: Exception) {
+                        _uiState.update { it.copy(error = e.localizedMessage) }
+                    }
+                }
+            }
+            BrainDumpIntent.ClearAllItems -> {
+                viewModelScope.launch {
+                    try {
+                        repository.deleteAllBrainDumpItems()
+                    } catch (e: Exception) {
+                        _uiState.update { it.copy(error = e.localizedMessage) }
+                    }
+                }
             }
         }
     }
