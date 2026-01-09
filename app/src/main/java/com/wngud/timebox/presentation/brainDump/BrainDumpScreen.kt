@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,18 +24,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-// ------------------------------------------------------------------------
-// 1. State Definition (상태 정의)
-// ------------------------------------------------------------------------
-data class BrainDumpUiState(
-    val items: List<String> = listOf(
-        "장보기 목록 정리",
-        "새로운 프로젝트 아이디어 스케치",
-        "주말 여행 계획 세우기"
-    ),
-    val inputText: String = ""
-)
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.hilt.navigation.compose.hiltViewModel
 
 // ------------------------------------------------------------------------
 // 2. Stateful Composable (상태 관리 & 로직 처리)
@@ -42,24 +33,15 @@ data class BrainDumpUiState(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrainDumpScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: BrainDumpViewModel = hiltViewModel()
 ) {
-    var uiState by remember { mutableStateOf(BrainDumpUiState()) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     BrainDumpContent(
         uiState = uiState,
         onBack = onBack,
-        onInputChange = { newText ->
-            uiState = uiState.copy(inputText = newText)
-        },
-        onSendClick = {
-            if (uiState.inputText.isNotBlank()) {
-                uiState = uiState.copy(
-                    items = uiState.items + uiState.inputText,
-                    inputText = ""
-                )
-            }
-        }
+        onIntent = viewModel::processIntent
     )
 }
 
@@ -71,8 +53,7 @@ fun BrainDumpScreen(
 fun BrainDumpContent(
     uiState: BrainDumpUiState,
     onBack: () -> Unit,
-    onInputChange: (String) -> Unit,
-    onSendClick: () -> Unit
+    onIntent: (BrainDumpIntent) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -121,7 +102,7 @@ fun BrainDumpContent(
             ) {
                 item {
                     Text(
-                        text = "오늘 하고 싶은 일, 걱정, 아이디어… 자유롭게 적어보세요!",
+                        text = "오늘 하고 싶은 일, 걱정, 아이디어…\n자유롭게 적어보세요!",
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color(0xFF8D94A0),
                             fontSize = 14.sp,
@@ -134,14 +115,17 @@ fun BrainDumpContent(
                     )
                 }
                 items(uiState.items) { item ->
-                    BrainDumpItemCard(text = item)
+                    BrainDumpItemCard(
+                        item = item,
+                        onDeleteClick = { id -> onIntent(BrainDumpIntent.DeleteItem(id)) }
+                    )
                 }
             }
 
             BrainDumpInputArea(
                 text = uiState.inputText,
-                onValueChange = onInputChange,
-                onSendClick = onSendClick,
+                onValueChange = { newText -> onIntent(BrainDumpIntent.InputTextChanged(newText)) },
+                onSendClick = { onIntent(BrainDumpIntent.SendClick) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
@@ -155,37 +139,49 @@ fun BrainDumpContent(
 // ------------------------------------------------------------------------
 
 @Composable
-fun BrainDumpItemCard(text: String) {
+fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit) {
     Card(
         shape = RoundedCornerShape(50),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(56.dp) // 높이 조정
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "•",
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF111111)
-                ),
-                modifier = Modifier.padding(end = 8.dp)
-            )
-            Text(
-                text = text,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 15.sp,
-                    color = Color(0xFF111111)
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                Column {
+                    Text(
+                        text = item.content,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontSize = 15.sp,
+                            color = Color(0xFF111111)
+                        )
+                    )
+                    if (item.formattedTimestamp.isNotBlank()) {
+                        Text(
+                            text = item.formattedTimestamp,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 10.sp,
+                                color = Color(0xFF8D94A0)
+                            )
+                        )
+                    }
+                }
+            }
+            IconButton(onClick = { onDeleteClick(item.id) }) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete Item",
+                    tint = Color(0xFF8D94A0)
                 )
-            )
+            }
         }
     }
 }
