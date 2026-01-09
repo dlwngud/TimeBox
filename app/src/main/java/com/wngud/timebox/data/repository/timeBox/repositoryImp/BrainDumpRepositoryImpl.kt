@@ -24,4 +24,8 @@ class BrainDumpRepositoryImpl @Inject constructor(
     override suspend fun deleteAllBrainDumpItems() {
         dao.deleteAllBrainDumpItems()
     }
+
+    override suspend fun updateBrainDumpItem(item: BrainDumpEntity) {
+        dao.updateBrainDumpItem(item)
+    }
 }

@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.wngud.timebox.data.local.BrainDumpEntity
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,4 +20,7 @@ interface BrainDumpDao {
 
     @Query("DELETE FROM brain_dump_items")
     suspend fun deleteAllBrainDumpItems()
+
+    @Update
+    suspend fun updateBrainDumpItem(item: BrainDumpEntity)
 }

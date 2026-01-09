@@ -20,7 +20,9 @@ data class BrainDumpUiState(
     val items: List<BrainDumpItem> = emptyList(), // Room에서 로드될 실제 데이터
     val inputText: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val editingItemId: Long? = null, // 현재 수정 중인 아이템의 ID (null이면 수정 중 아님)
+    val editingInputText: String = "" // 수정 다이얼로그의 입력 텍스트
 )
 
 // ------------------------------------------------------------------------
@@ -31,6 +33,10 @@ sealed class BrainDumpIntent {
     data object SendClick : BrainDumpIntent()
     data class DeleteItem(val id: Long) : BrainDumpIntent()
     data object ClearAllItems : BrainDumpIntent()
+    data class StartEditItem(val item: BrainDumpItem) : BrainDumpIntent() // 수정 시작
+    data class EditInputTextChanged(val newText: String) : BrainDumpIntent() // 수정 중 텍스트 변경
+    data object SaveEditedItem : BrainDumpIntent() // 수정 저장
+    data object CancelEditItem : BrainDumpIntent() // 수정 취소
 }
 
 @HiltViewModel
@@ -52,7 +58,7 @@ class BrainDumpViewModel @Inject constructor(
                 repository.getBrainDumpItems().collect { entities ->
                     _uiState.update { currentState ->
                         currentState.copy(
-                            items = entities.map { it.toBrainDumpItem() }, // Entity에서 UI Model로 매핑
+                            items = entities.map { it.toBrainDumpItem() },
                             isLoading = false,
                             error = null
                         )
@@ -102,6 +108,49 @@ class BrainDumpViewModel @Inject constructor(
                         _uiState.update { it.copy(error = e.localizedMessage) }
                     }
                 }
+            }
+            is BrainDumpIntent.StartEditItem -> {
+                _uiState.update {
+                    it.copy(
+                        editingItemId = intent.item.id,
+                        editingInputText = intent.item.content // 기존 내용을 수정 다이얼로그에 미리 채움
+                    )
+                }
+            }
+            is BrainDumpIntent.EditInputTextChanged -> {
+                _uiState.update { it.copy(editingInputText = intent.newText) }
+            }
+            BrainDumpIntent.SaveEditedItem -> {
+                _uiState.value.editingItemId?.let { id ->
+                    if (_uiState.value.editingInputText.isNotBlank()) {
+                        val editedContent = _uiState.value.editingInputText
+                        viewModelScope.launch {
+                            try {
+                                // 기존 아이템을 찾거나 새로 생성 (timestamp는 변경되지 않도록)
+                                val originalItem = _uiState.value.items.find { it.id == id }
+                                if (originalItem != null) {
+                                    repository.updateBrainDumpItem(
+                                        BrainDumpEntity(
+                                            id = id,
+                                            content = editedContent,
+                                            timestamp = originalItem.toBrainDumpEntity().timestamp // 기존 timestamp 유지
+                                        )
+                                    )
+                                } else {
+                                    // TODO: originalItem을 찾지 못한 경우 오류 처리
+                                }
+                                _uiState.update {
+                                    it.copy(editingItemId = null, editingInputText = "") // 수정 모드 종료
+                                }
+                            } catch (e: Exception) {
+                                _uiState.update { it.copy(error = e.localizedMessage) }
+                            }
+                        }
+                    }
+                }
+            }
+            BrainDumpIntent.CancelEditItem -> {
+                _uiState.update { it.copy(editingItemId = null, editingInputText = "") } // 수정 모드 종료
             }
         }
     }

@@ -8,4 +8,5 @@ interface BrainDumpRepository {
     fun getBrainDumpItems(): Flow<List<BrainDumpEntity>>
     suspend fun deleteBrainDumpItem(itemId: Long)
     suspend fun deleteAllBrainDumpItems()
+    suspend fun updateBrainDumpItem(item: BrainDumpEntity)
 }

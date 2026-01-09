@@ -1,6 +1,7 @@
 package com.wngud.timebox.presentation.brainDump
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,6 +44,33 @@ fun BrainDumpScreen(
         onBack = onBack,
         onIntent = viewModel::processIntent
     )
+
+    // 수정 다이얼로그
+    if (uiState.editingItemId != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.processIntent(BrainDumpIntent.CancelEditItem) },
+            title = { Text("아이템 수정") },
+            text = {
+                BasicTextField(
+                    value = uiState.editingInputText,
+                    onValueChange = { newText -> viewModel.processIntent(BrainDumpIntent.EditInputTextChanged(newText)) },
+                    textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
+                    modifier = Modifier.fillMaxWidth(),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.processIntent(BrainDumpIntent.SaveEditedItem) }) {
+                    Text("저장")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.processIntent(BrainDumpIntent.CancelEditItem) }) {
+                    Text("취소")
+                }
+            }
+        )
+    }
 }
 
 // ------------------------------------------------------------------------
@@ -117,7 +145,8 @@ fun BrainDumpContent(
                 items(uiState.items) { item ->
                     BrainDumpItemCard(
                         item = item,
-                        onDeleteClick = { id -> onIntent(BrainDumpIntent.DeleteItem(id)) }
+                        onDeleteClick = { id -> onIntent(BrainDumpIntent.DeleteItem(id)) },
+                        onItemClick = { clickedItem -> onIntent(BrainDumpIntent.StartEditItem(clickedItem)) } // 아이템 클릭 시 수정 시작
                     )
                 }
             }
@@ -139,14 +168,16 @@ fun BrainDumpContent(
 // ------------------------------------------------------------------------
 
 @Composable
-fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit) {
+fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItemClick: (BrainDumpItem) -> Unit) {
     Card(
-        shape = RoundedCornerShape(50),
+        shape = RoundedCornerShape(20),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp) // 높이 조정
+            .clip(RoundedCornerShape(20.dp))
+            .clickable { onItemClick(item) } // 아이템 클릭 이벤트 추가
     ) {
         Row(
             modifier = Modifier
