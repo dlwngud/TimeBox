@@ -6,7 +6,8 @@ import java.util.Date
 data class BrainDumpItem(
     val id: Long,
     val content: String,
-    val formattedTimestamp: String // UI에 표시할 포맷된 시간
+    val formattedTimestamp: String, // UI에 표시할 포맷된 시간
+    val isBigThree: Boolean = false
 )
 
 fun BrainDumpItem.toBrainDumpEntity(): BrainDumpEntity {
@@ -16,6 +17,7 @@ fun BrainDumpItem.toBrainDumpEntity(): BrainDumpEntity {
     return BrainDumpEntity(
         id = this.id,
         content = this.content,
-        timestamp = Date() // 실제 수정 시에는 원본 timestamp를 ViewModel에서 관리하여 전달해야 합니다.
+        timestamp = Date(), // 실제 수정 시에는 원본 timestamp를 ViewModel에서 관리하여 전달해야 합니다.
+        isBigThree = this.isBigThree
     )
 }

@@ -12,7 +12,8 @@ data class BrainDumpEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val content: String,
-    val timestamp: Date = Date()
+    val timestamp: Date = Date(),
+    val isBigThree: Boolean = false // Big Three 필드 추가
 )
 
 fun BrainDumpEntity.toBrainDumpItem(): BrainDumpItem {
@@ -20,6 +21,7 @@ fun BrainDumpEntity.toBrainDumpItem(): BrainDumpItem {
     return BrainDumpItem(
         id = this.id,
         content = this.content,
-        formattedTimestamp = formatter.format(this.timestamp)
+        formattedTimestamp = formatter.format(this.timestamp),
+        isBigThree = this.isBigThree
     )
 }
