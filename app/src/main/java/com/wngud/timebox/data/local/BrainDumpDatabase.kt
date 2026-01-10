@@ -4,8 +4,6 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.wngud.timebox.data.local.BrainDumpDao
-import com.wngud.timebox.data.local.BrainDumpEntity
 import java.util.Date
 
 class Converters {
@@ -20,7 +18,11 @@ class Converters {
     }
 }
 
-@Database(entities = [BrainDumpEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [BrainDumpEntity::class], 
+    version = 2,
+    exportSchema = true
+)
 @TypeConverters(Converters::class)
 abstract class BrainDumpDatabase : RoomDatabase() {
     abstract fun brainDumpDao(): BrainDumpDao

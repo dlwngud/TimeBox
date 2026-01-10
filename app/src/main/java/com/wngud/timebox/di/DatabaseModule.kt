@@ -22,7 +22,9 @@ object DatabaseModule {
             context,
             BrainDumpDatabase::class.java,
             "brain_dump_db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides

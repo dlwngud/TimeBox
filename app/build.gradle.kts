@@ -41,6 +41,7 @@ android {
     buildFeatures {
         compose = true
     }
+    ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 }
 
 dependencies {
@@ -81,7 +82,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:1.0.0")
 
     // Room
-    implementation("androidx.room:room-runtime:2.8.4")
-    ksp("androidx.room:room-compiler:2.8.4")
-    implementation("androidx.room:room-ktx:2.8.4")
+    implementation("androidx.room:room-runtime:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+
 }
