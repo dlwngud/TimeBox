@@ -22,7 +22,8 @@ data class BrainDumpUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val editingItemId: Long? = null, // 현재 수정 중인 아이템의 ID (null이면 수정 중 아님)
-    val editingInputText: String = "" // 수정 다이얼로그의 입력 텍스트
+    val editingInputText: String = "", // 수정 다이얼로그의 입력 텍스트
+    val selectedBigThreeIds: Set<Long> = emptySet() // Big Three로 선택된 아이템 ID 목록
 )
 
 // ------------------------------------------------------------------------
@@ -37,6 +38,7 @@ sealed class BrainDumpIntent {
     data class EditInputTextChanged(val newText: String) : BrainDumpIntent() // 수정 중 텍스트 변경
     data object SaveEditedItem : BrainDumpIntent() // 수정 저장
     data object CancelEditItem : BrainDumpIntent() // 수정 취소
+    data class ToggleBigThree(val id: Long) : BrainDumpIntent() // Big Three 토글
 }
 
 @HiltViewModel
@@ -56,11 +58,13 @@ class BrainDumpViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 repository.getBrainDumpItems().collect { entities ->
+                    val items = entities.map { it.toBrainDumpItem() }
                     _uiState.update { currentState ->
                         currentState.copy(
-                            items = entities.map { it.toBrainDumpItem() },
+                            items = items,
                             isLoading = false,
-                            error = null
+                            error = null,
+                            selectedBigThreeIds = items.filter { it.isBigThree }.map { it.id }.toSet() // 초기화 시 Big Three ID 설정
                         )
                     }
                 }
@@ -126,22 +130,24 @@ class BrainDumpViewModel @Inject constructor(
                         val editedContent = _uiState.value.editingInputText
                         viewModelScope.launch {
                             try {
-                                // 기존 아이템을 찾거나 새로 생성 (timestamp는 변경되지 않도록)
+                                // 기존 아이템을 찾아서 timestamp와 isBigThree 유지
                                 val originalItem = _uiState.value.items.find { it.id == id }
                                 if (originalItem != null) {
                                     repository.updateBrainDumpItem(
                                         BrainDumpEntity(
                                             id = id,
                                             content = editedContent,
-                                            timestamp = originalItem.toBrainDumpEntity().timestamp // 기존 timestamp 유지
+                                            timestamp = originalItem.toBrainDumpEntity().timestamp, // 기존 timestamp 유지
+                                            isBigThree = originalItem.isBigThree // Big Three 상태 유지
                                         )
                                     )
                                 } else {
                                     // TODO: originalItem을 찾지 못한 경우 오류 처리
+                                    _uiState.update { it.copy(error = "원본 아이템을 찾을 수 없습니다.") }
                                 }
                                 _uiState.update {
                                     it.copy(editingItemId = null, editingInputText = "") // 수정 모드 종료
-                                }
+                                } // 업데이트 후 UI 상태를 갱신하기 위해 한 번만 호출
                             } catch (e: Exception) {
                                 _uiState.update { it.copy(error = e.localizedMessage) }
                             }
@@ -151,6 +157,40 @@ class BrainDumpViewModel @Inject constructor(
             }
             BrainDumpIntent.CancelEditItem -> {
                 _uiState.update { it.copy(editingItemId = null, editingInputText = "") } // 수정 모드 종료
+            }
+            is BrainDumpIntent.ToggleBigThree -> {
+                val itemId = intent.id
+                val currentItem = _uiState.value.items.find { it.id == itemId }
+
+                currentItem?.let { item ->
+                    val newBigThreeState = !item.isBigThree
+
+                    // Big Three 개수 제한 로직
+                    val currentBigThreeCount = _uiState.value.items.count { it.isBigThree }
+
+                    if (newBigThreeState && currentBigThreeCount >= 3) {
+                        // 이미 3개가 선택되어 있고, 새로 선택하려고 하면 에러 처리 또는 무시
+                        _uiState.update { it.copy(error = "Big Three는 최대 3개까지 선택할 수 있습니다.") }
+                        return // 더 이상 진행하지 않음
+                    }
+
+                    viewModelScope.launch {
+                        try {
+                            // 기존 아이템의 timestamp 유지하고 isBigThree 상태만 변경
+                            repository.updateBrainDumpItem(
+                                BrainDumpEntity(
+                                    id = item.id,
+                                    content = item.content,
+                                    timestamp = item.toBrainDumpEntity().timestamp, // 기존 timestamp 유지
+                                    isBigThree = newBigThreeState
+                                )
+                            )
+                            // UI 상태 업데이트는 collectBrainDumpItems()를 통해 자동으로 이루어질 것임
+                        } catch (e: Exception) {
+                            _uiState.update { it.copy(error = e.localizedMessage) }
+                        }
+                    }
+                }
             }
         }
     }

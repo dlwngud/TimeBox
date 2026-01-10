@@ -12,8 +12,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.* 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,7 +65,7 @@ fun BrainDumpScreen(
                     Text("저장")
                 }
             },
-            dismissButton = {
+            dismissButton = { 
                 TextButton(onClick = { viewModel.processIntent(BrainDumpIntent.CancelEditItem) }) {
                     Text("취소")
                 }
@@ -142,11 +143,15 @@ fun BrainDumpContent(
                             .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
                     )
                 }
-                items(uiState.items) { item ->
+                items(
+                    items = uiState.items,
+                    key = { item -> item.id } // item.id를 고유 키로 사용
+                ) { item ->
                     BrainDumpItemCard(
                         item = item,
                         onDeleteClick = { id -> onIntent(BrainDumpIntent.DeleteItem(id)) },
-                        onItemClick = { clickedItem -> onIntent(BrainDumpIntent.StartEditItem(clickedItem)) } // 아이템 클릭 시 수정 시작
+                        onItemClick = { clickedItem -> onIntent(BrainDumpIntent.StartEditItem(clickedItem)) }, // 아이템 클릭 시 수정 시작
+                        onToggleBigThree = { id -> onIntent(BrainDumpIntent.ToggleBigThree(id)) } // Big Three 토글
                     )
                 }
             }
@@ -168,7 +173,7 @@ fun BrainDumpContent(
 // ------------------------------------------------------------------------
 
 @Composable
-fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItemClick: (BrainDumpItem) -> Unit) {
+fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItemClick: (BrainDumpItem) -> Unit, onToggleBigThree: (Long) -> Unit) {
     Card(
         shape = RoundedCornerShape(20),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -176,7 +181,7 @@ fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItem
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp) // 높이 조정
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp)) // 클릭 가능한 영역을 위해 clip 추가
             .clickable { onItemClick(item) } // 아이템 클릭 이벤트 추가
     ) {
         Row(
@@ -187,6 +192,19 @@ fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItem
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                // Big Three 별 아이콘
+                IconButton(
+                    onClick = { onToggleBigThree(item.id) },
+                    modifier = Modifier.size(24.dp) // 아이콘 크기 조정
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = if (item.isBigThree) "Big Three 선택됨" else "Big Three 선택 안됨",
+                        tint = if (item.isBigThree) Color(0xFFFFC107) else Color(0xFFB0B0B0) // 노란색 또는 회색
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp)) // 아이콘과 텍스트 사이 간격
+
                 Column {
                     Text(
                         text = item.content,
