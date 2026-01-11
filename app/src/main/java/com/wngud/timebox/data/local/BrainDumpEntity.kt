@@ -22,6 +22,7 @@ fun BrainDumpEntity.toBrainDumpItem(): BrainDumpItem {
         id = this.id,
         content = this.content,
         formattedTimestamp = formatter.format(this.timestamp),
-        isBigThree = this.isBigThree
+        isBigThree = this.isBigThree,
+        timestamp = this.timestamp // 원본 Date 객체 매핑
     )
 }
