@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch // launch import 추가
 
 // ------------------------------------------------------------------------
 // 2. Stateful Composable (상태 관리 & 로직 처리)
@@ -39,11 +40,38 @@ fun BrainDumpScreen(
     viewModel: BrainDumpViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() } // SnackbarHostState 생성
+    val scope = rememberCoroutineScope() // CoroutineScope 생성
+
+    // 스낵바 이벤트 구독 및 표시 로직
+    LaunchedEffect(key1 = Unit) {
+        viewModel.snackbarEvent.collect { event ->
+            scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    message = event.message,
+                    actionLabel = event.actionLabel,
+                    withDismissAction = true // 닫기 액션 추가
+                )
+                when (result) {
+                    SnackbarResult.ActionPerformed -> {
+                        // "복구" 버튼이 눌렸을 때
+                        if (event.actionLabel == "복구" && event.deletedItem != null) {
+                            viewModel.processIntent(BrainDumpIntent.UndoDeleteItem)
+                        }
+                    }
+                    SnackbarResult.Dismissed -> {
+                        // 스낵바가 닫혔을 때 (다른 이유로)
+                    }
+                }
+            }
+        }
+    }
 
     BrainDumpContent(
         uiState = uiState,
         onBack = onBack,
-        onIntent = viewModel::processIntent
+        onIntent = viewModel::processIntent,
+        snackbarHostState = snackbarHostState // SnackbarHostState 전달
     )
 
     // 수정 다이얼로그
@@ -82,7 +110,8 @@ fun BrainDumpScreen(
 fun BrainDumpContent(
     uiState: BrainDumpUiState,
     onBack: () -> Unit,
-    onIntent: (BrainDumpIntent) -> Unit
+    onIntent: (BrainDumpIntent) -> Unit,
+    snackbarHostState: SnackbarHostState // SnackbarHostState를 파라미터로 받도록 변경
 ) {
     Scaffold(
         topBar = {
@@ -111,7 +140,8 @@ fun BrainDumpContent(
                 )
             )
         },
-        containerColor = Color(0xFFF8F9FB)
+        containerColor = Color(0xFFF8F9FB),
+        snackbarHost = { SnackbarHost(snackbarHostState) } // SnackbarHost 연결
     ) { paddingValues ->
 
         Box(
