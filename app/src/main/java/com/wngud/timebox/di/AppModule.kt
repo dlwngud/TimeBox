@@ -1,9 +1,11 @@
 package com.wngud.timebox.di
 
-import com.wngud.timebox.manager.AppThemeManager
+import android.content.Context
+import com.wngud.timebox.data.datastore.ThemeDataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -13,7 +15,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAppThemeManager(): AppThemeManager {
-        return AppThemeManager()
+    fun provideThemeDataStore(
+        @ApplicationContext context: Context
+    ): ThemeDataStore {
+        return ThemeDataStore(context)
     }
 }

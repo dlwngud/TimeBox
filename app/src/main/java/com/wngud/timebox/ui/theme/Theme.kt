@@ -1,6 +1,5 @@
 package com.wngud.timebox.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,13 +8,22 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.wngud.timebox.presentation.ThemeViewModel
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryBlue,
+    onPrimary = Color.White,
+    background = DarkBackground,
+    onBackground = DarkTextPrimary,
+    surface = DarkSurface,
+    onSurface = DarkTextPrimary,
+    surfaceVariant = DarkSurfaceVariant,
+    secondary = DarkTextSecondary
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -26,22 +34,27 @@ private val LightColorScheme = lightColorScheme(
     surface = CardWhite,
     onSurface = TextBlack,
     secondary = TextGray
-    /* 필요 시 더 많은 슬롯 오버라이딩 가능 */
 )
 
 @Composable
 fun TimeBoxTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
+    val themeViewModel: ThemeViewModel = hiltViewModel()
+    val currentThemeMode by themeViewModel.themeMode.collectAsState(initial = "라이트")
+
+    val darkTheme = when (currentThemeMode) {
+        "다크" -> true
+        "라이트" -> false
+        else -> isSystemInDarkTheme()
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
