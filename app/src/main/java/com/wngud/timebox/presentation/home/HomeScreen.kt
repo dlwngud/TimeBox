@@ -1,8 +1,5 @@
 package com.wngud.timebox.presentation.home
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,10 +40,15 @@ import com.wngud.timebox.data.modal.Task
 import com.wngud.timebox.presentation.components.TimeBoxerTopBar
 import com.wngud.timebox.ui.theme.TimeBoxTheme
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.time.Duration // Duration import 추가
 import kotlin.math.roundToInt
 import androidx.compose.material.icons.filled.Check // 체크 아이콘을 위해 추가
+import com.wngud.timebox.ui.theme.BorderGray
+import com.wngud.timebox.ui.theme.DisabledGray
+import com.wngud.timebox.ui.theme.EventBlueBg
+import com.wngud.timebox.ui.theme.EventBlueBorder
+import com.wngud.timebox.ui.theme.SwitchBlue
+import com.wngud.timebox.ui.theme.TextSecondary
 
 val LocalDragTargetInfo = compositionLocalOf { DragAndDropState() }
 
@@ -157,7 +159,7 @@ fun HomeScreen(
 
     CompositionLocalProvider(LocalDragTargetInfo provides dragAndDropState) {
         Scaffold(
-            containerColor = Color(0xFFF5F7FA),
+            containerColor = MaterialTheme.colorScheme.background,
             topBar = { TimeBoxerTopBar(onNavigateToSetting) },
             floatingActionButton = {
                 FloatingActionButton(
@@ -239,7 +241,7 @@ fun TimeBoxerContent(
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.Bold
             ),
-            color = Color(0xFF1A1A1A)
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -247,7 +249,7 @@ fun TimeBoxerContent(
         Text(
             text = "AI가 추천하는 오늘의 Big Three입니다.",
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF9E9E9E)
+            color = DisabledGray
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -263,7 +265,7 @@ fun TimeBoxerContent(
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Bold
             ),
-            color = Color(0xFF1A1A1A)
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -290,7 +292,7 @@ fun DailySummaryCardNew(
             .clickable { onNavigateToStats() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp
@@ -309,13 +311,13 @@ fun DailySummaryCardNew(
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
-                    color = Color(0xFF1A1A1A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Text(
                     text = "자세히 보기 >",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF6B7280)
+                    color = TextSecondary
                 )
             }
 
@@ -353,7 +355,7 @@ fun StatsItem(icon: String, label: String, value: String) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFE8F3FF)),
+                .background(EventBlueBg),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -368,14 +370,14 @@ fun StatsItem(icon: String, label: String, value: String) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF9E9E9E)
+                color = DisabledGray
             )
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color(0xFF1A1A1A)
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -398,7 +400,7 @@ fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) { //
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 1.dp
@@ -415,8 +417,8 @@ fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) { //
                     .size(24.dp)
                     .clip(RoundedCornerShape(6.dp))
                     .background(
-                        if (task.isCompleted) Color(0xFF4CAF50) // 체크 시 녹색
-                        else Color(0xFFE0E0E0) // 미체크 시 회색
+                        if (task.isCompleted) SwitchBlue // 체크 시 파랑
+                        else BorderGray // 미체크 시 회색
                     )
                     .clickable { onToggleComplete(task, !task.isCompleted) }, // 클릭 시 상태 토글
                 contentAlignment = Alignment.Center
@@ -436,7 +438,7 @@ fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) { //
             Text(
                 text = task.title,
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color(0xFF1A1A1A),
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
             // "AI 추천" 텍스트 제거
@@ -453,12 +455,12 @@ fun TimelineEventCard(
     val isEmptySlot = event.title == "빈 시간"
     val backgroundColor = when {
         isEmptySlot -> Color(0xFFFAFAFA)
-        event.title.contains("기획") -> Color(0xFFE3F2FD)
-        else -> Color.White
+        event.title.contains("기획") -> EventBlueBg
+        else -> MaterialTheme.colorScheme.surface
     }
 
     val borderColor = when {
-        event.title.contains("기획") -> Color(0xFF2196F3)
+        event.title.contains("기획") -> EventBlueBorder
         else -> Color.Transparent
     }
 
@@ -513,7 +515,7 @@ fun TimelineEventCard(
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = if (isEmptySlot) FontWeight.Normal else FontWeight.SemiBold
                     ),
-                    color = if (isEmptySlot) Color(0xFF9E9E9E) else Color(0xFF1A1A1A)
+                    color = if (isEmptySlot) DisabledGray else MaterialTheme.colorScheme.onSurface
                 )
 
                 if (!isEmptySlot && event.title.contains("기획")) {
@@ -521,14 +523,14 @@ fun TimelineEventCard(
                     Text(
                         text = "핵심 기능 정의 및 와이어프레임",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF6B7280)
+                        color = TextSecondary
                     )
                 } else if (!isEmptySlot && event.title.contains("회의")) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "주간 진행 상황 공유",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF6B7280)
+                        color = TextSecondary
                     )
                 }
             }
@@ -537,7 +539,7 @@ fun TimelineEventCard(
                 Icon(
                     imageVector = Icons.Outlined.Star,
                     contentDescription = "Favorite",
-                    tint = Color(0xFF2196F3),
+                    tint = EventBlueBorder,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -562,7 +564,7 @@ fun HourTimelineRow(hour: Int, eventsStartingThisHour: List<ScheduleEvent>, drag
         Text(
             text = formattedTime,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF9E9E9E),
+            color = DisabledGray,
             modifier = Modifier.width(90.dp) // Consistent width for time column
         )
 

@@ -46,6 +46,17 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wngud.timebox.ui.theme.AccentAmber
+import com.wngud.timebox.ui.theme.AccentDeepPurple
+import com.wngud.timebox.ui.theme.AccentRed
+import com.wngud.timebox.ui.theme.StatsBlue
+import com.wngud.timebox.ui.theme.StatsBlueBg
+import com.wngud.timebox.ui.theme.StatsBlueLight
+import com.wngud.timebox.ui.theme.StatsPurpleBg
+import com.wngud.timebox.ui.theme.SuccessGreen
+import com.wngud.timebox.ui.theme.TextDark
+import com.wngud.timebox.ui.theme.TextSecondary
+import com.wngud.timebox.ui.theme.TextTertiary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,7 +72,7 @@ fun StatsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = Color(0xFF1565C0)
+                            color = StatsBlue
                         )
                     )
                 },
@@ -70,16 +81,16 @@ fun StatsScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "뒤로가기",
-                            tint = Color(0xFF111111)
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFF8F9FB)
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
-        containerColor = Color(0xFFF8F9FB)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier
@@ -102,7 +113,7 @@ fun StatsScreen(
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
-                        color = Color(0xFF111111)
+                        color = MaterialTheme.colorScheme.onBackground
                     ),
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -154,7 +165,7 @@ fun AIInsightCard() {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE3F2FD)
+            containerColor = StatsBlueBg
         ),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
@@ -167,7 +178,7 @@ fun AIInsightCard() {
                 Icon(
                     imageVector = Icons.Default.Face,
                     contentDescription = null,
-                    tint = Color(0xFF1565C0),
+                    tint = StatsBlue,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -176,7 +187,7 @@ fun AIInsightCard() {
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = Color(0xFF1565C0)
+                        color = StatsBlue
                     )
                 )
             }
@@ -188,7 +199,7 @@ fun AIInsightCard() {
                     append("오늘 아침 9-11시 집중도는 ")
                     withStyle(
                         style = SpanStyle(
-                            color = Color(0xFF1565C0),
+                            color = StatsBlue,
                             fontWeight = FontWeight.Bold
                         )
                     ) {
@@ -199,7 +210,7 @@ fun AIInsightCard() {
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
-                    color = Color(0xFF424242)
+                    color = TextDark
                 )
             )
 
@@ -216,7 +227,7 @@ fun AIInsightCard() {
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        color = Color(0xFF1565C0)
+                        color = StatsBlue
                     )
                 )
 
@@ -226,7 +237,7 @@ fun AIInsightCard() {
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        tint = Color(0xFFFFA000),
+                        tint = AccentAmber,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -235,7 +246,7 @@ fun AIInsightCard() {
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
-                            color = Color(0xFFFFA000)
+                            color = AccentAmber
                         )
                     )
                 }
@@ -263,7 +274,7 @@ fun AIInsightCard() {
                                 .width(8.dp)
                                 .height(60.dp * heights[index])
                                 .background(
-                                    color = if (highlights[index]) Color(0xFF1565C0) else Color(0xFFBBDEFB),
+                                    color = if (highlights[index]) StatsBlue else StatsBlueLight,
                                     shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
                                 )
                         )
@@ -272,7 +283,7 @@ fun AIInsightCard() {
                             text = hour,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontSize = 10.sp,
-                                color = if (highlights[index]) Color(0xFF1565C0) else Color(0xFF757575),
+                                color = if (highlights[index]) StatsBlue else TextTertiary,
                                 fontWeight = if (highlights[index]) FontWeight.Bold else FontWeight.Normal
                             )
                         )
@@ -299,7 +310,7 @@ fun BigThreeItem(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
@@ -324,7 +335,7 @@ fun BigThreeItem(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp,
-                            color = Color(0xFF111111)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -355,7 +366,7 @@ fun BigThreeItem(
                     text = "$targetTime → $actualTime",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontSize = 14.sp,
-                        color = Color(0xFF616161)
+                        color = TextSecondary
                     )
                 )
             }
@@ -368,7 +379,7 @@ fun BigThreeItem(
                 Icon(
                     imageVector = if (isPositive) Icons.Default.ThumbUp else Icons.Default.Close,
                     contentDescription = null,
-                    tint = if (isPositive) Color(0xFF4CAF50) else Color(0xFFFF5252),
+                    tint = if (isPositive) SuccessGreen else AccentRed,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
@@ -377,7 +388,7 @@ fun BigThreeItem(
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isPositive) Color(0xFF4CAF50) else Color(0xFFFF5252)
+                        color = if (isPositive) SuccessGreen else AccentRed
                     )
                 )
                 Spacer(modifier = Modifier.width(16.dp))
@@ -385,7 +396,7 @@ fun BigThreeItem(
                     text = comment,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontSize = 13.sp,
-                        color = Color(0xFF616161)
+                        color = TextSecondary
                     )
                 )
             }
@@ -399,7 +410,7 @@ fun AIDailyRecommendation() {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFEDE7F6)
+            containerColor = StatsPurpleBg
         ),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
@@ -412,7 +423,7 @@ fun AIDailyRecommendation() {
                 Icon(
                     imageVector = Icons.Default.Favorite,
                     contentDescription = null,
-                    tint = Color(0xFF673AB7),
+                    tint = AccentDeepPurple,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -421,7 +432,7 @@ fun AIDailyRecommendation() {
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = Color(0xFF673AB7)
+                        color = AccentDeepPurple
                     )
                 )
             }
@@ -433,7 +444,7 @@ fun AIDailyRecommendation() {
                     append("내일 운동 블록을 ")
                     withStyle(
                         style = SpanStyle(
-                            color = Color(0xFF673AB7),
+                            color = AccentDeepPurple,
                             fontWeight = FontWeight.Bold
                         )
                     ) {
@@ -444,7 +455,7 @@ fun AIDailyRecommendation() {
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
-                    color = Color(0xFF424242)
+                    color = TextDark
                 )
             )
 
@@ -453,7 +464,7 @@ fun AIDailyRecommendation() {
             Button(
                 onClick = { },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF673AB7)
+                    containerColor = AccentDeepPurple
                 ),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.height(44.dp)

@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.wngud.timebox.ui.theme.DisabledGray
+import com.wngud.timebox.ui.theme.SubtitleGray
+import com.wngud.timebox.ui.theme.SwitchBlue
 import kotlinx.coroutines.launch // launch import 추가
 
 // ------------------------------------------------------------------------
@@ -122,7 +125,7 @@ fun BrainDumpContent(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = Color(0xFF111111)
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     )
                 },
@@ -131,16 +134,16 @@ fun BrainDumpContent(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "뒤로가기",
-                            tint = Color(0xFF111111)
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color(0xFFF8F9FB)
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
-        containerColor = Color(0xFFF8F9FB),
+        containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) } // SnackbarHost 연결
     ) { paddingValues ->
 
@@ -163,7 +166,7 @@ fun BrainDumpContent(
                     Text(
                         text = "오늘 하고 싶은 일, 걱정, 아이디어…\n자유롭게 적어보세요!",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = Color(0xFF8D94A0),
+                            color = DisabledGray,
                             fontSize = 14.sp,
                             lineHeight = 20.sp
                         ),
@@ -206,7 +209,7 @@ fun BrainDumpContent(
 fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItemClick: (BrainDumpItem) -> Unit, onToggleBigThree: (Long) -> Unit) {
     Card(
         shape = RoundedCornerShape(20),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -230,7 +233,7 @@ fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItem
                     Icon(
                         imageVector = Icons.Filled.Star,
                         contentDescription = if (item.isBigThree) "Big Three 선택됨" else "Big Three 선택 안됨",
-                        tint = if (item.isBigThree) Color(0xFFFFC107) else Color(0xFFB0B0B0) // 노란색 또는 회색
+                        tint = if (item.isBigThree) Color(0xFFFFC107) else DisabledGray // 노란색 또는 회색
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp)) // 아이콘과 텍스트 사이 간격
@@ -240,7 +243,7 @@ fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItem
                         text = item.content,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = 15.sp,
-                            color = Color(0xFF111111)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                     if (item.formattedTimestamp.isNotBlank()) {
@@ -248,7 +251,7 @@ fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItem
                             text = item.formattedTimestamp,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontSize = 10.sp,
-                                color = Color(0xFF8D94A0)
+                                color = DisabledGray
                             )
                         )
                     }
@@ -258,7 +261,7 @@ fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItem
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Item",
-                    tint = Color(0xFF8D94A0)
+                    tint = DisabledGray
                 )
             }
         }
@@ -278,7 +281,7 @@ fun BrainDumpInputArea(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(50),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 2.dp
         ) {
             Row(
@@ -292,7 +295,7 @@ fun BrainDumpInputArea(
                         Text(
                             text = "여기에 입력하세요...",
                             style = TextStyle(
-                                color = Color(0xFFB0B0B0),
+                                color = SubtitleGray,
                                 fontSize = 15.sp
                             )
                         )
@@ -305,7 +308,7 @@ fun BrainDumpInputArea(
                             fontSize = 15.sp
                         ),
                         singleLine = true,
-                        cursorBrush = SolidColor(Color(0xFF186EF2)),
+                        cursorBrush = SolidColor(SwitchBlue),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
