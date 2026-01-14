@@ -28,4 +28,8 @@ class BrainDumpRepositoryImpl @Inject constructor(
     override suspend fun updateBrainDumpItem(item: BrainDumpEntity) {
         dao.updateBrainDumpItem(item)
     }
+
+    override fun getBigThreeItems(): Flow<List<BrainDumpEntity>> {
+        return dao.getBigThreeItems()
+    }
 }

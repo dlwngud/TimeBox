@@ -23,4 +23,7 @@ interface BrainDumpDao {
 
     @Update
     suspend fun updateBrainDumpItem(item: BrainDumpEntity)
+
+    @Query("SELECT * FROM brain_dump_items WHERE isBigThree = 1 ORDER BY timestamp DESC LIMIT 3")
+    fun getBigThreeItems(): Flow<List<BrainDumpEntity>>
 }

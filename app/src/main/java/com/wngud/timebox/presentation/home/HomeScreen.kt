@@ -47,8 +47,10 @@ import com.wngud.timebox.ui.theme.BorderGray
 import com.wngud.timebox.ui.theme.DisabledGray
 import com.wngud.timebox.ui.theme.EventBlueBg
 import com.wngud.timebox.ui.theme.EventBlueBorder
-import com.wngud.timebox.ui.theme.SwitchBlue
+import com.wngud.timebox.ui.theme.SuccessGreen
 import com.wngud.timebox.ui.theme.TextSecondary
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.wngud.timebox.ui.theme.SwitchBlue
 
 val LocalDragTargetInfo = compositionLocalOf { DragAndDropState() }
 
@@ -83,9 +85,11 @@ class DragAndDropState {
 fun HomeScreen(
     onNavigateToStats: () -> Unit,
     onNavigateToBrainDump: () -> Unit,
-    onNavigateToSetting: () -> Unit
+    onNavigateToSetting: () -> Unit,
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val dragAndDropState = remember { DragAndDropState() }
+    val bigThreeTasks by viewModel.bigThreeTasks.collectAsState()
 
     // Fake Data
     val fakeEvents = remember {
@@ -121,14 +125,7 @@ fun HomeScreen(
         )
     }
 
-    // Fake Tasks - mutableStateListOf로 변경
-    val fakeTasks = remember {
-        mutableStateListOf(
-            Task("1", "기획안 초안 작성 완료하기", false),
-            Task("2", "팀 회의록 정리", false),
-            Task("3", "디자인 시스템 검토", false)
-        )
-    }
+
 
     val onEventMove: (ScheduleEvent, LocalTime) -> Unit = { event, newTime ->
         val index = fakeEvents.indexOfFirst { it.id == event.id }
@@ -149,12 +146,8 @@ fun HomeScreen(
         dragAndDropState.currentDropTargetTime = null
     }
 
-    val onTaskCheckChanged: (Task, Boolean) -> Unit = { task, isChecked ->
-        val index = fakeTasks.indexOfFirst { it.id == task.id }
-        if (index != -1) {
-            val updatedTask = task.copy(isCompleted = isChecked)
-            fakeTasks[index] = updatedTask
-        }
+    val onTaskCheckChanged: (Task, Boolean) -> Unit = { task, _ ->
+        viewModel.toggleTaskCompletion(task.id)
     }
 
     CompositionLocalProvider(LocalDragTargetInfo provides dragAndDropState) {
@@ -178,7 +171,7 @@ fun HomeScreen(
             TimeBoxerContent(
                 modifier = Modifier.padding(innerPadding),
                 stats = DailyStats("3.5h", 5, 8, 85, 12), // Fake Data
-                tasks = fakeTasks,
+                tasks = bigThreeTasks,
                 events = fakeEvents,
                 onNavigateToStats = onNavigateToStats,
                 userName = "사용자",
