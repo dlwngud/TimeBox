@@ -19,11 +19,12 @@ class Converters {
 }
 
 @Database(
-    entities = [BrainDumpEntity::class], 
-    version = 2,
+    entities = [BrainDumpEntity::class, ScheduleSlotEntity::class], 
+    version = 3,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class BrainDumpDatabase : RoomDatabase() {
     abstract fun brainDumpDao(): BrainDumpDao
+    abstract fun scheduleSlotDao(): ScheduleSlotDao
 }
