@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.wngud.timebox.data.modal.DailyStats
 import com.wngud.timebox.data.modal.EventColorType
-import com.wngud.timebox.data.modal.ScheduleEvent
+import com.wngud.timebox.data.modal.ScheduleSlot
 import com.wngud.timebox.data.modal.Task
 import com.wngud.timebox.presentation.components.TimeBoxerTopBar
 import com.wngud.timebox.ui.theme.TimeBoxTheme
@@ -56,27 +56,23 @@ val LocalDragTargetInfo = compositionLocalOf { DragAndDropState() }
 
 class DragAndDropState {
     var isDragging by mutableStateOf(false)
-    var draggedEvent by mutableStateOf<ScheduleEvent?>(null)
+    var draggedSlot by mutableStateOf<ScheduleSlot?>(null)
     var dragOffset by mutableStateOf(Offset.Zero)
     var dragStartingPoint by mutableStateOf(Offset.Zero)
     var currentCardCoordinates by mutableStateOf<LayoutCoordinates?>(null)
-    var draggingEventId by mutableStateOf<String?>(null)
+    var draggingSlotId by mutableStateOf<String?>(null)
     var currentDropTargetTime by mutableStateOf<LocalTime?>(null)
 
-    fun startDrag(event: ScheduleEvent, startOffset: Offset, cardCoords: LayoutCoordinates) {
+    fun startDrag(slot: ScheduleSlot, startOffset: Offset, cardCoords: LayoutCoordinates) {
         isDragging = true
-        draggedEvent = event
+        draggedSlot = slot
         dragStartingPoint = startOffset
         currentCardCoordinates = cardCoords
-        draggingEventId = event.id
+        draggingSlotId = slot.id
     }
 
     fun stopDrag() {
         isDragging = false
-        // draggedEvent, dragOffset 등은 onEventMove에서 처리 후 null로 만드는 것이 좋음
-        // (드롭 애니메이션 등을 위해 잠시 값을 유지할 수 있음)
-        // draggingEventId = null
-        // currentDropTargetTime = null
     }
 }
 
@@ -90,59 +86,19 @@ fun HomeScreen(
 ) {
     val dragAndDropState = remember { DragAndDropState() }
     val bigThreeTasks by viewModel.bigThreeTasks.collectAsState()
+    val scheduleSlots by viewModel.scheduleSlots.collectAsState()
+    val showBrainDumpSelector by viewModel.showBrainDumpSelector.collectAsState()
+    val selectedTimeSlot by viewModel.selectedTimeSlot.collectAsState()
+    val availableBrainDumpItems by viewModel.availableBrainDumpItems.collectAsState()
 
-    // Fake Data
-    val fakeEvents = remember {
-        mutableStateListOf(
-            ScheduleEvent(
-                "1",
-                "기획안 초안 작성",
-                LocalTime.of(9, 0),
-                LocalTime.of(10, 0),
-                EventColorType.BLUE
-            ),
-            ScheduleEvent(
-                "2",
-                "점심 시간",
-                LocalTime.of(12, 0),
-                LocalTime.of(13, 0),
-                EventColorType.GREEN
-            ),
-            ScheduleEvent(
-                "3",
-                "팀 회의",
-                LocalTime.of(15, 30),
-                LocalTime.of(16, 0),
-                EventColorType.GREEN
-            ),
-            ScheduleEvent(
-                "4",
-                "개인 업무",
-                LocalTime.of(18, 0),
-                LocalTime.of(18, 30),
-                EventColorType.GRAY
-            )
-        )
-    }
-
-
-
-    val onEventMove: (ScheduleEvent, LocalTime) -> Unit = { event, newTime ->
-        val index = fakeEvents.indexOfFirst { it.id == event.id }
-        if (index != -1) {
-            val durationMinutes = Duration.between(event.startTime, event.endTime).toMinutes()
-            val updatedEvent = event.copy(
-                startTime = newTime,
-                endTime = newTime.plusMinutes(durationMinutes)
-            )
-            fakeEvents[index] = updatedEvent
-        }
+    val onSlotMove: (ScheduleSlot, LocalTime) -> Unit = { slot, newTime ->
+        viewModel.moveScheduleSlot(slot, newTime)
         // 드롭 완료 후 상태 초기화
-        dragAndDropState.draggedEvent = null
+        dragAndDropState.draggedSlot = null
         dragAndDropState.dragOffset = Offset.Zero
         dragAndDropState.dragStartingPoint = Offset.Zero
         dragAndDropState.currentCardCoordinates = null
-        dragAndDropState.draggingEventId = null
+        dragAndDropState.draggingSlotId = null
         dragAndDropState.currentDropTargetTime = null
     }
 
@@ -172,31 +128,43 @@ fun HomeScreen(
                 modifier = Modifier.padding(innerPadding),
                 stats = DailyStats("3.5h", 5, 8, 85, 12), // Fake Data
                 tasks = bigThreeTasks,
-                events = fakeEvents,
+                scheduleSlots = scheduleSlots,
                 onNavigateToStats = onNavigateToStats,
                 userName = "사용자",
                 dragAndDropState = dragAndDropState,
-                onEventMove = onEventMove,
-                onTaskCheckChanged = onTaskCheckChanged
+                onSlotMove = onSlotMove,
+                onTaskCheckChanged = onTaskCheckChanged,
+                onTimeSlotClick = viewModel::onTimeSlotClick
             )
 
-            // Floating dragged item visual - 여기로 이동하여 모든 UI 위에 렌더링되도록 함
-            if (dragAndDropState.isDragging && dragAndDropState.draggedEvent != null && dragAndDropState.currentCardCoordinates != null) {
-                val draggedEvent = dragAndDropState.draggedEvent!!
+            // Floating dragged item visual
+            if (dragAndDropState.isDragging && dragAndDropState.draggedSlot != null && dragAndDropState.currentCardCoordinates != null) {
+                val draggedSlot = dragAndDropState.draggedSlot!!
                 val initialCardOffset = dragAndDropState.currentCardCoordinates!!.positionInRoot()
                 val density = LocalDensity.current
 
-                // Calculate offset relative to root for the floating card
                 val floatingOffset = initialCardOffset + dragAndDropState.dragOffset - dragAndDropState.dragStartingPoint
 
                 Box(modifier = Modifier
                     .offset { IntOffset(floatingOffset.x.roundToInt(), floatingOffset.y.roundToInt()) }
                     .width(with(density) { dragAndDropState.currentCardCoordinates!!.size.width.toDp() })
-                    .zIndex(1f) // 가장 위에 렌더링되도록 Z-Index 설정
+                    .zIndex(1f)
                 ) {
-                    TimelineEventCard(draggedEvent, dragAndDropState, Modifier)
+                    TimelineSlotCard(draggedSlot, dragAndDropState, Modifier)
                 }
             }
+        }
+        
+        // BrainDump Item Selector BottomSheet
+        if (showBrainDumpSelector && selectedTimeSlot != null) {
+            BrainDumpItemSelectorBottomSheet(
+                items = availableBrainDumpItems,
+                selectedTimeSlot = selectedTimeSlot!!,
+                onItemSelected = { item ->
+                    viewModel.placeBrainDumpItem(item, selectedTimeSlot!!.first)
+                },
+                onDismiss = viewModel::dismissBrainDumpSelector
+            )
         }
     }
 }
@@ -206,12 +174,13 @@ fun TimeBoxerContent(
     modifier: Modifier = Modifier,
     stats: DailyStats,
     tasks: List<Task>,
-    events: List<ScheduleEvent>,
+    scheduleSlots: List<ScheduleSlot>,
     onNavigateToStats: () -> Unit,
     userName: String,
     dragAndDropState: DragAndDropState,
-    onEventMove: (ScheduleEvent, LocalTime) -> Unit,
-    onTaskCheckChanged: (Task, Boolean) -> Unit // onTaskCheckChanged 추가
+    onSlotMove: (ScheduleSlot, LocalTime) -> Unit,
+    onTaskCheckChanged: (Task, Boolean) -> Unit,
+    onTimeSlotClick: (LocalTime) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -265,9 +234,10 @@ fun TimeBoxerContent(
 
         // Timeline
         TimelineSectionNew(
-            events = events,
+            scheduleSlots = scheduleSlots,
             dragAndDropState = dragAndDropState,
-            onEventMove = onEventMove
+            onSlotMove = onSlotMove,
+            onTimeSlotClick = onTimeSlotClick
         )
 
         Spacer(modifier = Modifier.height(80.dp))
@@ -440,31 +410,29 @@ fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) { //
 }
 
 @Composable
-fun TimelineEventCard(
-    event: ScheduleEvent,
+fun TimelineSlotCard(
+    slot: ScheduleSlot,
     dragAndDropState: DragAndDropState,
     modifier: Modifier = Modifier
 ) {
-    val isEmptySlot = event.title == "빈 시간"
-    val backgroundColor = when {
-        isEmptySlot -> Color(0xFFFAFAFA)
-        event.title.contains("기획") -> EventBlueBg
-        else -> MaterialTheme.colorScheme.surface
+    val backgroundColor = when (slot.colorType) {
+        EventColorType.BLUE -> EventBlueBg
+        EventColorType.GREEN -> Color(0xFFE8F5E9)
+        EventColorType.GRAY -> Color(0xFFFAFAFA)
     }
 
-    val borderColor = when {
-        event.title.contains("기획") -> EventBlueBorder
+    val borderColor = when (slot.colorType) {
+        EventColorType.BLUE -> EventBlueBorder
         else -> Color.Transparent
     }
 
-    // State to hold the LayoutCoordinates of this Card
     var cardLayoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .alpha(if (dragAndDropState.isDragging && dragAndDropState.draggingEventId == event.id) 0f else 1f)
-            .onGloballyPositioned { coordinates -> // Capture the LayoutCoordinates of the Card
+            .alpha(if (dragAndDropState.isDragging && dragAndDropState.draggingSlotId == slot.id) 0f else 1f)
+            .onGloballyPositioned { coordinates ->
                 cardLayoutCoordinates = coordinates
             },
         shape = RoundedCornerShape(12.dp),
@@ -479,11 +447,11 @@ fun TimelineEventCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .pointerInput(event.id) { // pointerInput은 Card 내부에 그대로 유지
+                .pointerInput(slot.id) {
                     detectDragGesturesAfterLongPress(
                         onDragStart = { offset ->
-                            cardLayoutCoordinates?.let { coords -> // 저장된 LayoutCoordinates 사용
-                                dragAndDropState.startDrag(event, offset, coords)
+                            cardLayoutCoordinates?.let { coords ->
+                                dragAndDropState.startDrag(slot, offset, coords)
                             }
                         },
                         onDragEnd = {
@@ -504,34 +472,18 @@ fun TimelineEventCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = event.title,
+                    text = slot.title,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = if (isEmptySlot) FontWeight.Normal else FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold
                     ),
-                    color = if (isEmptySlot) DisabledGray else MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-
-                if (!isEmptySlot && event.title.contains("기획")) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "핵심 기능 정의 및 와이어프레임",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
-                    )
-                } else if (!isEmptySlot && event.title.contains("회의")) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "주간 진행 상황 공유",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
-                    )
-                }
             }
 
-            if (event.title.contains("기획")) {
+            if (slot.colorType == EventColorType.BLUE) {
                 Icon(
                     imageVector = Icons.Outlined.Star,
-                    contentDescription = "Favorite",
+                    contentDescription = "Big Three",
                     tint = EventBlueBorder,
                     modifier = Modifier.size(24.dp)
                 )
@@ -541,12 +493,17 @@ fun TimelineEventCard(
 }
 
 @Composable
-fun HourTimelineRow(hour: Int, eventsStartingThisHour: List<ScheduleEvent>, dragAndDropState: DragAndDropState) {
+fun HourTimelineRow(
+    hour: Int,
+    slotsForThisHour: List<ScheduleSlot>,
+    dragAndDropState: DragAndDropState,
+    onTimeSlotClick: (LocalTime) -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top
     ) {
-        // Time label (e.g., 오전 9시, 오후 5시)
+        // Time label
         val formattedTime = when (hour) {
             0 -> "오전 12시"
             in 1..11 -> "오전 ${hour}시"
@@ -558,53 +515,90 @@ fun HourTimelineRow(hour: Int, eventsStartingThisHour: List<ScheduleEvent>, drag
             text = formattedTime,
             style = MaterialTheme.typography.bodyMedium,
             color = DisabledGray,
-            modifier = Modifier.width(90.dp) // Consistent width for time column
+            modifier = Modifier.width(90.dp)
         )
 
-        Spacer(modifier = Modifier.width(12.dp)) // Space between time and card
+        Spacer(modifier = Modifier.width(12.dp))
 
-        // Event cards or empty placeholder. Use Column to stack multiple events for the same hour.
-        if (eventsStartingThisHour.isNotEmpty()) {
-            Column(
-                modifier = Modifier.weight(1f), // Take remaining width
-                verticalArrangement = Arrangement.spacedBy(8.dp) // Space between multiple events if any
-            ) {
-                // Sort events within the same hour by their start time (minute)
-                eventsStartingThisHour
-                    .sortedBy { it.startTime }
-                    .forEach { event ->
-                        TimelineEventCard(
-                            event = event,
-                            dragAndDropState = dragAndDropState,
-                            modifier = Modifier
-                        )
-                    }
-            }
-        } else {
-            // 일정이 없는 경우, 오른쪽 공간을 비움
-            // 드래그앤드롭 계산의 일관성을 위해 빈 공간도 높이를 차지하도록 Spacer를 둡니다.
-            Spacer(modifier = Modifier.weight(1f).height(56.dp))
+        // Right area: divided into 30-minute slots
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // 00분 슬롯
+            TimeSlotRow(
+                hour = hour,
+                minute = 0,
+                slots = slotsForThisHour.filter { it.startTime.minute == 0 },
+                onTimeSlotClick = onTimeSlotClick,
+                dragAndDropState = dragAndDropState
+            )
+
+            // 30분 슬롯
+            TimeSlotRow(
+                hour = hour,
+                minute = 30,
+                slots = slotsForThisHour.filter { it.startTime.minute == 30 },
+                onTimeSlotClick = onTimeSlotClick,
+                dragAndDropState = dragAndDropState
+            )
         }
+    }
+}
+
+/**
+ * 30분 단위 시간 슬롯 행
+ */
+@Composable
+fun TimeSlotRow(
+    hour: Int,
+    minute: Int,
+    slots: List<ScheduleSlot>,
+    onTimeSlotClick: (LocalTime) -> Unit,
+    dragAndDropState: DragAndDropState
+) {
+    if (slots.isNotEmpty()) {
+        // 일정이 있는 경우
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            slots.sortedBy { it.startTime }.forEach { slot ->
+                TimelineSlotCard(
+                    slot = slot,
+                    dragAndDropState = dragAndDropState,
+                    modifier = Modifier
+                )
+            }
+        }
+    } else {
+        // 빈 슬롯 - 클릭 가능한 영역
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(28.dp)
+                .clickable {
+                    onTimeSlotClick(LocalTime.of(hour, minute))
+                }
+                .background(Color.Transparent)
+        )
     }
 }
 
 // Updated TimelineSectionNew to display 00-23 hours and handle drops
 @Composable
 fun TimelineSectionNew(
-    events: List<ScheduleEvent>,
+    scheduleSlots: List<ScheduleSlot>,
     dragAndDropState: DragAndDropState,
-    onEventMove: (ScheduleEvent, LocalTime) -> Unit
+    onSlotMove: (ScheduleSlot, LocalTime) -> Unit,
+    onTimeSlotClick: (LocalTime) -> Unit
 ) {
-    val eventsByHour = remember(events) { // remember the map to avoid re-computation on every recomposition
-        events.groupBy { it.startTime.hour }
+    val slotsByHour = remember(scheduleSlots) {
+        scheduleSlots.groupBy { it.startTime.hour }
     }
 
     val density = LocalDensity.current
 
-    val hourRowBaseHeightDp = 56.dp // TimelineEventCard의 기본 높이
-    val hourRowVerticalSpacingDp = 12.dp // HourTimelineRow 간의 수직 간격
-    // 한 시간 슬롯의 총 높이 (카드/스페이서 높이 + 다음 슬롯까지의 간격)
-    val hourSlotTotalHeightPx = with(density) { (hourRowBaseHeightDp + hourRowVerticalSpacingDp).toPx() }
+    val hourRowBaseHeightDp = 28.dp // 30분 슬롯의 기본 높이
+    val hourRowVerticalSpacingDp = 8.dp // 슬롯 간 간격
+    val hourSlotTotalHeightPx = with(density) { ((hourRowBaseHeightDp * 2) + (hourRowVerticalSpacingDp * 2) + 12.dp).toPx() }
 
     var timelineRootCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
@@ -614,48 +608,43 @@ fun TimelineSectionNew(
             .onGloballyPositioned { coordinates ->
                 timelineRootCoordinates = coordinates
             }
-            .pointerInput(dragAndDropState.isDragging) { // 드래그 이벤트 감지 (드롭 타겟으로서)
-                if (dragAndDropState.isDragging && dragAndDropState.draggedEvent != null) {
+            .pointerInput(dragAndDropState.isDragging) {
+                if (dragAndDropState.isDragging && dragAndDropState.draggedSlot != null) {
                     detectDragGestures(
-                        onDragStart = { /* 드롭 타겟에서는 사용하지 않음 */ },
+                        onDragStart = { },
                         onDragEnd = {
-                            val draggedEvent = dragAndDropState.draggedEvent
+                            val draggedSlot = dragAndDropState.draggedSlot
                             val targetTime = dragAndDropState.currentDropTargetTime
-                            if (draggedEvent != null && targetTime != null) {
-                                onEventMove(draggedEvent, targetTime)
+                            if (draggedSlot != null && targetTime != null) {
+                                onSlotMove(draggedSlot, targetTime)
                             }
-                            // 드롭 완료 후 상태 초기화
-                            dragAndDropState.draggedEvent = null
+                            dragAndDropState.draggedSlot = null
                             dragAndDropState.dragOffset = Offset.Zero
                             dragAndDropState.dragStartingPoint = Offset.Zero
                             dragAndDropState.currentCardCoordinates = null
-                            dragAndDropState.draggingEventId = null
+                            dragAndDropState.draggingSlotId = null
                             dragAndDropState.currentDropTargetTime = null
-                            dragAndDropState.stopDrag() // isDragging = false
+                            dragAndDropState.stopDrag()
                         },
                         onDragCancel = {
-                            // 드래그 취소 시 상태 초기화
-                            dragAndDropState.draggedEvent = null
+                            dragAndDropState.draggedSlot = null
                             dragAndDropState.dragOffset = Offset.Zero
                             dragAndDropState.dragStartingPoint = Offset.Zero
                             dragAndDropState.currentCardCoordinates = null
-                            dragAndDropState.draggingEventId = null
+                            dragAndDropState.draggingSlotId = null
                             dragAndDropState.currentDropTargetTime = null
-                            dragAndDropState.stopDrag() // isDragging = false
+                            dragAndDropState.stopDrag()
                         },
                         onDrag = { change, _ ->
                             timelineRootCoordinates?.let { rootCoords ->
                                 val currentPointerYInTimeline = change.position.y - rootCoords.positionInRoot().y
 
-                                // 포인터 Y 위치를 타임라인 전체 높이 비율로 변환하여 시간 계산
-                                val totalTimelineMinutes = 24 * 60 // 00:00부터 23:30까지 가능하도록
+                                val totalTimelineMinutes = 24 * 60
                                 val timelineVisualHeight = rootCoords.size.height.toFloat()
                                 val relativeYFraction = (currentPointerYInTimeline / timelineVisualHeight).coerceIn(0f, 1f)
 
                                 val rawMinuteInTimeline = (relativeYFraction * totalTimelineMinutes).roundToInt()
-
-                                // 30분 단위로 스냅 및 시간 범위 클램프 (00:00 ~ 23:30)
-                                val snappedMinutes = ((rawMinuteInTimeline / 30) * 30).coerceIn(0, 23 * 60 + 30) 
+                                val snappedMinutes = ((rawMinuteInTimeline / 30) * 30).coerceIn(0, 23 * 60 + 30)
 
                                 val newHour = snappedMinutes / 60
                                 val newMinute = snappedMinutes % 60
@@ -666,40 +655,42 @@ fun TimelineSectionNew(
                 }
             }
     ) {
-        // 실제 타임라인 항목들이 렌더링되는 Column
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(hourRowVerticalSpacingDp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            for (hour in 0..23) { // 00시부터 23시까지 모든 시간 순회
-                val eventsForThisHour = eventsByHour[hour] ?: emptyList()
-                HourTimelineRow(hour = hour, eventsStartingThisHour = eventsForThisHour, dragAndDropState = dragAndDropState)
+            for (hour in 0..23) {
+                val slotsForThisHour = slotsByHour[hour] ?: emptyList()
+                HourTimelineRow(
+                    hour = hour,
+                    slotsForThisHour = slotsForThisHour,
+                    dragAndDropState = dragAndDropState,
+                    onTimeSlotClick = onTimeSlotClick
+                )
             }
         }
 
-        // 드롭 타겟 시각적 표시 (오버레이)
+        // Drop target visual indicator
         if (dragAndDropState.isDragging && dragAndDropState.currentDropTargetTime != null && timelineRootCoordinates != null) {
             val targetTime = dragAndDropState.currentDropTargetTime!!
             val targetHour = targetTime.hour
             val targetMinute = targetTime.minute
 
-            // 드롭 타겟 인디케이터의 Y 위치 계산 (타임라인 시작점으로부터의 오프셋)
-            // (시간 + 분/60.0) * 시간당 높이 (여기서는 HourTimelineRow의 총 높이를 기준으로 함)
             val yOffsetForIndicatorPx = (targetHour + targetMinute / 60f) * hourSlotTotalHeightPx
 
             Spacer(
                 modifier = Modifier
-                    .offset { // offset Modifier는 IntOffset 람다를 받습니다.
+                    .offset {
                         IntOffset(
-                            x = with(density) { (90.dp + 12.dp).roundToPx() }, // 시간 라벨과 간격 너비만큼 X 오프셋
-                            y = yOffsetForIndicatorPx.roundToInt() // 계산된 Y 오프셋 적용
+                            x = with(density) { (90.dp + 12.dp).roundToPx() },
+                            y = yOffsetForIndicatorPx.roundToInt()
                         )
                     }
-                    .width(with(density) { (timelineRootCoordinates!!.size.width.toDp() - (90.dp + 12.dp)) }) // 카드와 비슷한 너비
-                    .height(hourRowBaseHeightDp) // 30분 슬롯에 맞게 높이 조정 (현재는 카드 높이와 동일하게)
+                    .width(with(density) { (timelineRootCoordinates!!.size.width.toDp() - (90.dp + 12.dp)) })
+                    .height(28.dp)
                     .alpha(0.5f)
-                    .background(Color.Blue.copy(alpha = 0.3f), shape = RoundedCornerShape(12.dp)) // 반투명 파란색 배경
-                    .zIndex(0.5f) // 타임라인 콘텐츠 위에, 드래그되는 플로팅 카드 아래에 렌더링
+                    .background(Color.Blue.copy(alpha = 0.3f), shape = RoundedCornerShape(12.dp))
+                    .zIndex(0.5f)
             )
         }
     }
