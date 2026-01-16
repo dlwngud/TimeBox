@@ -15,4 +15,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindBrainDumpRepository(brainDumpRepositoryImpl: BrainDumpRepositoryImpl): BrainDumpRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindScheduleRepository(scheduleRepositoryImpl: com.wngud.timebox.data.repository.timeBox.repositoryImp.ScheduleRepositoryImpl): com.wngud.timebox.domain.repository.ScheduleRepository
 }

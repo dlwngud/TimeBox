@@ -32,4 +32,10 @@ object DatabaseModule {
     fun provideBrainDumpDao(database: BrainDumpDatabase): BrainDumpDao {
         return database.brainDumpDao()
     }
+
+    @Provides
+    @Singleton
+    fun provideScheduleSlotDao(database: BrainDumpDatabase): com.wngud.timebox.data.local.ScheduleSlotDao {
+        return database.scheduleSlotDao()
+    }
 }
