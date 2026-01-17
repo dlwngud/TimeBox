@@ -3,6 +3,7 @@ package com.wngud.timebox.presentation.home
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
@@ -52,30 +53,6 @@ import com.wngud.timebox.ui.theme.TextSecondary
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wngud.timebox.ui.theme.SwitchBlue
 
-val LocalDragTargetInfo = compositionLocalOf { DragAndDropState() }
-
-class DragAndDropState {
-    var isDragging by mutableStateOf(false)
-    var draggedSlot by mutableStateOf<ScheduleSlot?>(null)
-    var dragOffset by mutableStateOf(Offset.Zero)
-    var dragStartingPoint by mutableStateOf(Offset.Zero)
-    var currentCardCoordinates by mutableStateOf<LayoutCoordinates?>(null)
-    var draggingSlotId by mutableStateOf<String?>(null)
-    var currentDropTargetTime by mutableStateOf<LocalTime?>(null)
-
-    fun startDrag(slot: ScheduleSlot, startOffset: Offset, cardCoords: LayoutCoordinates) {
-        isDragging = true
-        draggedSlot = slot
-        dragStartingPoint = startOffset
-        currentCardCoordinates = cardCoords
-        draggingSlotId = slot.id
-    }
-
-    fun stopDrag() {
-        isDragging = false
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -84,88 +61,56 @@ fun HomeScreen(
     onNavigateToSetting: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val dragAndDropState = remember { DragAndDropState() }
     val bigThreeTasks by viewModel.bigThreeTasks.collectAsState()
     val scheduleSlots by viewModel.scheduleSlots.collectAsState()
     val showBrainDumpSelector by viewModel.showBrainDumpSelector.collectAsState()
     val selectedTimeSlot by viewModel.selectedTimeSlot.collectAsState()
     val availableBrainDumpItems by viewModel.availableBrainDumpItems.collectAsState()
 
-    val onSlotMove: (ScheduleSlot, LocalTime) -> Unit = { slot, newTime ->
-        viewModel.moveScheduleSlot(slot, newTime)
-        // 드롭 완료 후 상태 초기화
-        dragAndDropState.draggedSlot = null
-        dragAndDropState.dragOffset = Offset.Zero
-        dragAndDropState.dragStartingPoint = Offset.Zero
-        dragAndDropState.currentCardCoordinates = null
-        dragAndDropState.draggingSlotId = null
-        dragAndDropState.currentDropTargetTime = null
-    }
-
     val onTaskCheckChanged: (Task, Boolean) -> Unit = { task, _ ->
         viewModel.toggleTaskCompletion(task.id)
     }
 
-    CompositionLocalProvider(LocalDragTargetInfo provides dragAndDropState) {
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
-            topBar = { TimeBoxerTopBar(onNavigateToSetting) },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = onNavigateToBrainDump,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
-                    shape = CircleShape
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Task"
-                    )
-                }
-            }
-        ) { innerPadding ->
-            TimeBoxerContent(
-                modifier = Modifier.padding(innerPadding),
-                stats = DailyStats("3.5h", 5, 8, 85, 12), // Fake Data
-                tasks = bigThreeTasks,
-                scheduleSlots = scheduleSlots,
-                onNavigateToStats = onNavigateToStats,
-                userName = "사용자",
-                dragAndDropState = dragAndDropState,
-                onSlotMove = onSlotMove,
-                onTaskCheckChanged = onTaskCheckChanged,
-                onTimeSlotClick = viewModel::onTimeSlotClick
-            )
-
-            // Floating dragged item visual
-            if (dragAndDropState.isDragging && dragAndDropState.draggedSlot != null && dragAndDropState.currentCardCoordinates != null) {
-                val draggedSlot = dragAndDropState.draggedSlot!!
-                val initialCardOffset = dragAndDropState.currentCardCoordinates!!.positionInRoot()
-                val density = LocalDensity.current
-
-                val floatingOffset = initialCardOffset + dragAndDropState.dragOffset - dragAndDropState.dragStartingPoint
-
-                Box(modifier = Modifier
-                    .offset { IntOffset(floatingOffset.x.roundToInt(), floatingOffset.y.roundToInt()) }
-                    .width(with(density) { dragAndDropState.currentCardCoordinates!!.size.width.toDp() })
-                    .zIndex(1f)
-                ) {
-                    TimelineSlotCard(draggedSlot, dragAndDropState, Modifier)
-                }
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = { TimeBoxerTopBar(onNavigateToSetting) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onNavigateToBrainDump,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White,
+                shape = CircleShape
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Task"
+                )
             }
         }
-        
-        // BrainDump Item Selector BottomSheet
-        if (showBrainDumpSelector && selectedTimeSlot != null) {
-            BrainDumpItemSelectorBottomSheet(
-                items = availableBrainDumpItems,
-                selectedTimeSlot = selectedTimeSlot!!,
-                onItemSelected = { item ->
-                    viewModel.placeBrainDumpItem(item, selectedTimeSlot!!.first)
-                },
-                onDismiss = viewModel::dismissBrainDumpSelector
-            )
-        }
+    ) { innerPadding ->
+        TimeBoxerContent(
+            modifier = Modifier.padding(innerPadding),
+            stats = DailyStats("3.5h", 5, 8, 85, 12),
+            tasks = bigThreeTasks,
+            scheduleSlots = scheduleSlots,
+            onNavigateToStats = onNavigateToStats,
+            userName = "사용자",
+            onTaskCheckChanged = onTaskCheckChanged,
+            onTimeSlotClick = viewModel::onTimeSlotClick,
+            onSlotLongClick = viewModel::removeScheduleSlot
+        )
+    }
+    
+    // BrainDump Item Selector BottomSheet
+    if (showBrainDumpSelector && selectedTimeSlot != null) {
+        BrainDumpItemSelectorBottomSheet(
+            items = availableBrainDumpItems,
+            selectedTimeSlot = selectedTimeSlot!!,
+            onItemSelected = { item ->
+                viewModel.placeBrainDumpItem(item, selectedTimeSlot!!.first)
+            },
+            onDismiss = viewModel::dismissBrainDumpSelector
+        )
     }
 }
 
@@ -177,10 +122,9 @@ fun TimeBoxerContent(
     scheduleSlots: List<ScheduleSlot>,
     onNavigateToStats: () -> Unit,
     userName: String,
-    dragAndDropState: DragAndDropState,
-    onSlotMove: (ScheduleSlot, LocalTime) -> Unit,
     onTaskCheckChanged: (Task, Boolean) -> Unit,
-    onTimeSlotClick: (LocalTime) -> Unit
+    onTimeSlotClick: (LocalTime) -> Unit,
+    onSlotLongClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -235,9 +179,8 @@ fun TimeBoxerContent(
         // Timeline
         TimelineSectionNew(
             scheduleSlots = scheduleSlots,
-            dragAndDropState = dragAndDropState,
-            onSlotMove = onSlotMove,
-            onTimeSlotClick = onTimeSlotClick
+            onTimeSlotClick = onTimeSlotClick,
+            onSlotLongClick = onSlotLongClick
         )
 
         Spacer(modifier = Modifier.height(80.dp))
@@ -408,12 +351,12 @@ fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) { //
         }
     }
 }
-
+    
 @Composable
 fun TimelineSlotCard(
     slot: ScheduleSlot,
-    dragAndDropState: DragAndDropState,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSlotLongClick: (String) -> Unit = {}
 ) {
     val backgroundColor = when (slot.colorType) {
         EventColorType.BLUE -> EventBlueBg
@@ -426,68 +369,82 @@ fun TimelineSlotCard(
         else -> Color.Transparent
     }
 
-    var cardLayoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var showContextMenu by remember { mutableStateOf(false) }
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(if (dragAndDropState.isDragging && dragAndDropState.draggingSlotId == slot.id) 0f else 1f)
-            .onGloballyPositioned { coordinates ->
-                cardLayoutCoordinates = coordinates
-            },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = backgroundColor
-        ),
-        border = if (borderColor != Color.Transparent) {
-            BorderStroke(2.dp, borderColor)
-        } else null
-    ) {
-        Row(
-            modifier = Modifier
+    Box {
+        Card(
+            modifier = modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .pointerInput(slot.id) {
-                    detectDragGesturesAfterLongPress(
-                        onDragStart = { offset ->
-                            cardLayoutCoordinates?.let { coords ->
-                                dragAndDropState.startDrag(slot, offset, coords)
-                            }
-                        },
-                        onDragEnd = {
-                            dragAndDropState.stopDrag()
-                        },
-                        onDragCancel = {
-                            dragAndDropState.stopDrag()
-                        },
-                        onDrag = { change, dragAmount ->
-                            dragAndDropState.dragOffset += dragAmount
-                        }
-                    )
-                },
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .combinedClickable(
+                    onClick = { },
+                    onLongClick = { showContextMenu = true }
+                ),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = backgroundColor
+            ),
+            border = if (borderColor != Color.Transparent) {
+                BorderStroke(2.dp, borderColor)
+            } else null
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = slot.title,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = slot.title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
-            if (slot.colorType == EventColorType.BLUE) {
-                Icon(
-                    imageVector = Icons.Outlined.Star,
-                    contentDescription = "Big Three",
-                    tint = EventBlueBorder,
-                    modifier = Modifier.size(24.dp)
-                )
+                if (slot.colorType == EventColorType.BLUE) {
+                    Icon(
+                        imageVector = Icons.Outlined.Star,
+                        contentDescription = "Big Three",
+                        tint = EventBlueBorder,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
+        }
+        
+        // Context Menu (DropdownMenu)
+        DropdownMenu(
+            expanded = showContextMenu,
+            onDismissRequest = { showContextMenu = false },
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "🗑️",
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            text = "삭제",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Red
+                        )
+                    }
+                },
+                onClick = {
+                    onSlotLongClick(slot.id)
+                    showContextMenu = false
+                }
+            )
         }
     }
 }
@@ -496,8 +453,8 @@ fun TimelineSlotCard(
 fun HourTimelineRow(
     hour: Int,
     slotsForThisHour: List<ScheduleSlot>,
-    dragAndDropState: DragAndDropState,
-    onTimeSlotClick: (LocalTime) -> Unit
+    onTimeSlotClick: (LocalTime) -> Unit,
+    onSlotLongClick: (String) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -531,7 +488,7 @@ fun HourTimelineRow(
                 minute = 0,
                 slots = slotsForThisHour.filter { it.startTime.minute == 0 },
                 onTimeSlotClick = onTimeSlotClick,
-                dragAndDropState = dragAndDropState
+                onSlotLongClick = onSlotLongClick
             )
 
             // 30분 슬롯
@@ -540,7 +497,7 @@ fun HourTimelineRow(
                 minute = 30,
                 slots = slotsForThisHour.filter { it.startTime.minute == 30 },
                 onTimeSlotClick = onTimeSlotClick,
-                dragAndDropState = dragAndDropState
+                onSlotLongClick = onSlotLongClick
             )
         }
     }
@@ -555,7 +512,7 @@ fun TimeSlotRow(
     minute: Int,
     slots: List<ScheduleSlot>,
     onTimeSlotClick: (LocalTime) -> Unit,
-    dragAndDropState: DragAndDropState
+    onSlotLongClick: (String) -> Unit
 ) {
     if (slots.isNotEmpty()) {
         // 일정이 있는 경우
@@ -563,8 +520,8 @@ fun TimeSlotRow(
             slots.sortedBy { it.startTime }.forEach { slot ->
                 TimelineSlotCard(
                     slot = slot,
-                    dragAndDropState = dragAndDropState,
-                    modifier = Modifier
+                    modifier = Modifier,
+                    onSlotLongClick = onSlotLongClick
                 )
             }
         }
@@ -582,115 +539,28 @@ fun TimeSlotRow(
     }
 }
 
-// Updated TimelineSectionNew to display 00-23 hours and handle drops
+// Updated TimelineSectionNew to display 00-23 hours
 @Composable
 fun TimelineSectionNew(
     scheduleSlots: List<ScheduleSlot>,
-    dragAndDropState: DragAndDropState,
-    onSlotMove: (ScheduleSlot, LocalTime) -> Unit,
-    onTimeSlotClick: (LocalTime) -> Unit
+    onTimeSlotClick: (LocalTime) -> Unit,
+    onSlotLongClick: (String) -> Unit
 ) {
     val slotsByHour = remember(scheduleSlots) {
         scheduleSlots.groupBy { it.startTime.hour }
     }
 
-    val density = LocalDensity.current
-
-    val hourRowBaseHeightDp = 28.dp // 30분 슬롯의 기본 높이
-    val hourRowVerticalSpacingDp = 8.dp // 슬롯 간 간격
-    val hourSlotTotalHeightPx = with(density) { ((hourRowBaseHeightDp * 2) + (hourRowVerticalSpacingDp * 2) + 12.dp).toPx() }
-
-    var timelineRootCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { coordinates ->
-                timelineRootCoordinates = coordinates
-            }
-            .pointerInput(dragAndDropState.isDragging) {
-                if (dragAndDropState.isDragging && dragAndDropState.draggedSlot != null) {
-                    detectDragGestures(
-                        onDragStart = { },
-                        onDragEnd = {
-                            val draggedSlot = dragAndDropState.draggedSlot
-                            val targetTime = dragAndDropState.currentDropTargetTime
-                            if (draggedSlot != null && targetTime != null) {
-                                onSlotMove(draggedSlot, targetTime)
-                            }
-                            dragAndDropState.draggedSlot = null
-                            dragAndDropState.dragOffset = Offset.Zero
-                            dragAndDropState.dragStartingPoint = Offset.Zero
-                            dragAndDropState.currentCardCoordinates = null
-                            dragAndDropState.draggingSlotId = null
-                            dragAndDropState.currentDropTargetTime = null
-                            dragAndDropState.stopDrag()
-                        },
-                        onDragCancel = {
-                            dragAndDropState.draggedSlot = null
-                            dragAndDropState.dragOffset = Offset.Zero
-                            dragAndDropState.dragStartingPoint = Offset.Zero
-                            dragAndDropState.currentCardCoordinates = null
-                            dragAndDropState.draggingSlotId = null
-                            dragAndDropState.currentDropTargetTime = null
-                            dragAndDropState.stopDrag()
-                        },
-                        onDrag = { change, _ ->
-                            timelineRootCoordinates?.let { rootCoords ->
-                                val currentPointerYInTimeline = change.position.y - rootCoords.positionInRoot().y
-
-                                val totalTimelineMinutes = 24 * 60
-                                val timelineVisualHeight = rootCoords.size.height.toFloat()
-                                val relativeYFraction = (currentPointerYInTimeline / timelineVisualHeight).coerceIn(0f, 1f)
-
-                                val rawMinuteInTimeline = (relativeYFraction * totalTimelineMinutes).roundToInt()
-                                val snappedMinutes = ((rawMinuteInTimeline / 30) * 30).coerceIn(0, 23 * 60 + 30)
-
-                                val newHour = snappedMinutes / 60
-                                val newMinute = snappedMinutes % 60
-                                dragAndDropState.currentDropTargetTime = LocalTime.of(newHour, newMinute)
-                            }
-                        }
-                    )
-                }
-            }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            for (hour in 0..23) {
-                val slotsForThisHour = slotsByHour[hour] ?: emptyList()
-                HourTimelineRow(
-                    hour = hour,
-                    slotsForThisHour = slotsForThisHour,
-                    dragAndDropState = dragAndDropState,
-                    onTimeSlotClick = onTimeSlotClick
-                )
-            }
-        }
-
-        // Drop target visual indicator
-        if (dragAndDropState.isDragging && dragAndDropState.currentDropTargetTime != null && timelineRootCoordinates != null) {
-            val targetTime = dragAndDropState.currentDropTargetTime!!
-            val targetHour = targetTime.hour
-            val targetMinute = targetTime.minute
-
-            val yOffsetForIndicatorPx = (targetHour + targetMinute / 60f) * hourSlotTotalHeightPx
-
-            Spacer(
-                modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            x = with(density) { (90.dp + 12.dp).roundToPx() },
-                            y = yOffsetForIndicatorPx.roundToInt()
-                        )
-                    }
-                    .width(with(density) { (timelineRootCoordinates!!.size.width.toDp() - (90.dp + 12.dp)) })
-                    .height(28.dp)
-                    .alpha(0.5f)
-                    .background(Color.Blue.copy(alpha = 0.3f), shape = RoundedCornerShape(12.dp))
-                    .zIndex(0.5f)
+        for (hour in 0..23) {
+            val slotsForThisHour = slotsByHour[hour] ?: emptyList()
+            HourTimelineRow(
+                hour = hour,
+                slotsForThisHour = slotsForThisHour,
+                onTimeSlotClick = onTimeSlotClick,
+                onSlotLongClick = onSlotLongClick
             )
         }
     }

@@ -1,27 +1,32 @@
 package com.wngud.timebox.presentation.home
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wngud.timebox.presentation.brainDump.BrainDumpItem
 import com.wngud.timebox.ui.theme.DisabledGray
+import com.wngud.timebox.ui.theme.SwitchBlue
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /**
- * BrainDump 아이템을 선택할 수 있는 BottomSheet
+ * BrainDump 아이템을 선택할 수 있는 BottomSheet (개선된 디자인)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,37 +36,36 @@ fun BrainDumpItemSelectorBottomSheet(
     onItemSelected: (BrainDumpItem) -> Unit,
     onDismiss: () -> Unit
 ) {
+    var selectedItem by remember { mutableStateOf<BrainDumpItem?>(null) }
+    
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp)
         ) {
             // Header
-            Text(
-                text = "일정 추가",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            
-            Text(
-                text = formatTimeSlot(selectedTimeSlot),
-                style = MaterialTheme.typography.bodyMedium,
-                color = DisabledGray,
-                modifier = Modifier.padding(bottom = 20.dp)
-            )
-            
-            Divider(color = DisabledGray.copy(alpha = 0.2f))
-            
-            Spacer(modifier = Modifier.height(16.dp))
+            Column(modifier = Modifier.padding(bottom = 20.dp)) {
+                Text(
+                    text = "일정 추가",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = formatTimeSlot(selectedTimeSlot),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = DisabledGray
+                )
+            }
             
             // Items list
             if (items.isEmpty()) {
@@ -74,21 +78,51 @@ fun BrainDumpItemSelectorBottomSheet(
                     Text(
                         text = "배치 가능한 아이템이 없습니다.\nBrain Dump에서 새로운 아이템을 추가해보세요!",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = DisabledGray,
-                        modifier = Modifier.padding(horizontal = 20.dp)
+                        color = DisabledGray
                     )
                 }
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.heightIn(max = 400.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = false)
+                        .heightIn(max = 400.dp)
                 ) {
                     items(items) { item ->
-                        BrainDumpItemRow(
+                        BrainDumpItemOptionCard(
                             item = item,
-                            onClick = { onItemSelected(item) }
+                            isSelected = selectedItem == item,
+                            onClick = { selectedItem = item }
                         )
                     }
+                }
+                
+                Spacer(modifier = Modifier.height(20.dp))
+                
+                // Confirm Button
+                Button(
+                    onClick = {
+                        selectedItem?.let { onItemSelected(it) }
+                    },
+                    enabled = selectedItem != null,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = SwitchBlue,
+                        disabledContainerColor = DisabledGray
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(
+                        text = "확인",
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                    )
                 }
             }
         }
@@ -96,59 +130,94 @@ fun BrainDumpItemSelectorBottomSheet(
 }
 
 /**
- * BottomSheet 내부의 BrainDump 아이템 행
+ * BrainDump 아이템 선택 옵션 카드 (ThemeOptionItem 스타일)
  */
 @Composable
-private fun BrainDumpItemRow(
+private fun BrainDumpItemOptionCard(
     item: BrainDumpItem,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) SwitchBlue.copy(alpha = 0.1f) else MaterialTheme.colorScheme.background
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
-        )
+        border = if (isSelected) BorderStroke(2.dp, SwitchBlue) else BorderStroke(1.dp, DisabledGray.copy(alpha = 0.3f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Big Three 표시
-            if (item.isBigThree) {
-                Icon(
-                    imageVector = Icons.Filled.Star,
-                    contentDescription = "Big Three",
-                    tint = Color(0xFFFFC107),
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                // Big Three 표시
+                if (item.isBigThree) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFFC107).copy(alpha = 0.2f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = "Big Three",
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                
+                // 아이템 내용
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.content,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontSize = 15.sp,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (isSelected) SwitchBlue else MaterialTheme.colorScheme.onSurface
+                        ),
+                        maxLines = 2
+                    )
+                    
+                    if (item.formattedTimestamp.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = item.formattedTimestamp,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 11.sp
+                            ),
+                            color = DisabledGray
+                        )
+                    }
+                }
             }
             
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.content,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 15.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                
-                if (item.formattedTimestamp.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(4.dp))
+            // 선택 표시
+            if (isSelected) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(SwitchBlue)
+                ) {
                     Text(
-                        text = item.formattedTimestamp,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 11.sp
-                        ),
-                        color = DisabledGray
+                        text = "✓",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
