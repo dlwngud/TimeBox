@@ -43,11 +43,12 @@ fun TimeBoxTheme(
 ) {
     val context = LocalContext.current
     val themeViewModel: ThemeViewModel = hiltViewModel()
-    val currentThemeMode by themeViewModel.themeMode.collectAsState(initial = "라이트")
+    val currentThemeMode by themeViewModel.themeMode.collectAsState(initial = "시스템")
 
     val darkTheme = when (currentThemeMode) {
         "다크" -> true
         "라이트" -> false
+        "시스템" -> isSystemInDarkTheme()
         else -> isSystemInDarkTheme()
     }
 
