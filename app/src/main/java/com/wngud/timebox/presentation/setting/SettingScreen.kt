@@ -3,6 +3,7 @@ package com.wngud.timebox.presentation.setting
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -235,9 +237,6 @@ fun SettingContent(
 // 4. Reusable Components (재사용 가능한 컴포넌트)
 // ------------------------------------------------------------------------
 
-/**
- * 설정 화면의 각 항목을 표현하는 카드 컴포넌트
- */
 @Composable
 fun SettingItemCard(
     icon: String,
@@ -249,6 +248,9 @@ fun SettingItemCard(
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true
 ) {
+    // MaterialTheme.colorScheme를 사용하여 앱의 테마 설정 감지
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -257,9 +259,9 @@ fun SettingItemCard(
             .then(
                 if (onClick != null && enabled) Modifier.clickable { onClick() } else Modifier
             ),
-        shape = RoundedCornerShape(20.dp), // 둥근 모서리
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp) // 살짝 그림자
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
     ) {
         Row(
             modifier = Modifier
@@ -275,7 +277,14 @@ fun SettingItemCard(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(iconBgColor)
+                        .background(
+                            if (isDarkTheme) {
+                                // 다크모드에서는 더 어두운 색상 사용
+                                iconBgColor.copy(alpha = 0.3f)
+                            } else {
+                                iconBgColor
+                            }
+                        )
                 ) {
                     Text(
                         text = icon,
@@ -345,10 +354,20 @@ fun ThemeSelectionDialog(
                     .padding(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // 시스템 모드 옵션
+                ThemeOptionItem(
+                    icon = "⚙️",
+                    title = "시스템",
+                    description = "기기 설정을 따릅니다",
+                    isSelected = selectedTheme == "시스템",
+                    onClick = { selectedTheme = "시스템" }
+                )
+                
                 // 라이트 모드 옵션
                 ThemeOptionItem(
                     icon = "☀️",
                     title = "라이트",
+                    description = "밝은 테마",
                     isSelected = selectedTheme == "라이트",
                     onClick = { selectedTheme = "라이트" }
                 )
@@ -357,6 +376,7 @@ fun ThemeSelectionDialog(
                 ThemeOptionItem(
                     icon = "🌙",
                     title = "다크",
+                    description = "어두운 테마",
                     isSelected = selectedTheme == "다크",
                     onClick = { selectedTheme = "다크" }
                 )
@@ -396,13 +416,14 @@ fun ThemeSelectionDialog(
 fun ThemeOptionItem(
     icon: String,
     title: String,
+    description: String? = null,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(if (description != null) 72.dp else 64.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -436,15 +457,26 @@ fun ThemeOptionItem(
                     )
                 }
                 
-                // 제목
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 16.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        color = if (isSelected) SwitchBlue else MaterialTheme.colorScheme.onSurface
+                // 제목 및 설명
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontSize = 16.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSelected) SwitchBlue else MaterialTheme.colorScheme.onSurface
+                        )
                     )
-                )
+                    if (description != null) {
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 12.sp,
+                                color = SubtitleGray
+                            )
+                        )
+                    }
+                }
             }
             
             // 선택 표시
@@ -480,7 +512,7 @@ fun ThemeSelectionDialogPreview() {
 @Composable
 fun ThemeOptionItemPreview() {
     MaterialTheme {
-        ThemeOptionItem("☀️", "라이트", true, {})
+        ThemeOptionItem("☀️", "라이트", isSelected = true, onClick = {})
     }
 }
 
