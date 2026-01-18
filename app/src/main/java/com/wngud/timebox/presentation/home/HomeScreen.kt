@@ -1,11 +1,13 @@
 package com.wngud.timebox.presentation.home
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -41,17 +43,12 @@ import com.wngud.timebox.data.modal.Task
 import com.wngud.timebox.presentation.components.TimeBoxerTopBar
 import com.wngud.timebox.ui.theme.TimeBoxTheme
 import java.time.LocalTime
-import java.time.Duration // Duration import 추가
+import java.time.Duration
 import kotlin.math.roundToInt
-import androidx.compose.material.icons.filled.Check // 체크 아이콘을 위해 추가
-import com.wngud.timebox.ui.theme.BorderGray
-import com.wngud.timebox.ui.theme.DisabledGray
-import com.wngud.timebox.ui.theme.EventBlueBg
-import com.wngud.timebox.ui.theme.EventBlueBorder
-import com.wngud.timebox.ui.theme.SuccessGreen
-import com.wngud.timebox.ui.theme.TextSecondary
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.graphics.luminance
+import com.wngud.timebox.ui.theme.*
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.wngud.timebox.ui.theme.SwitchBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -254,6 +251,9 @@ fun DailySummaryCardNew(
 
 @Composable
 fun StatsItem(icon: String, label: String, value: String) {
+    // MaterialTheme.colorScheme를 사용하여 앱의 테마 설정 감지
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -261,7 +261,10 @@ fun StatsItem(icon: String, label: String, value: String) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(EventBlueBg),
+                .background(
+                    if (isDarkTheme) Color(0xFF1E3A5F)
+                    else EventBlueBg
+                ),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -318,25 +321,33 @@ fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) { //
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // MaterialTheme.colorScheme를 사용하여 앱의 테마 설정 감지
+            val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+            
             Box(
                 modifier = Modifier
                     .size(24.dp)
                     .clip(RoundedCornerShape(6.dp))
                     .background(
-                        if (task.isCompleted) SwitchBlue // 체크 시 파랑
-                        else BorderGray // 미체크 시 회색
+                        if (task.isCompleted) SwitchBlue
+                        else if (isDarkTheme) Color(0xFF424242)
+                        else BorderGray
                     )
-                    .clickable { onToggleComplete(task, !task.isCompleted) }, // 클릭 시 상태 토글
+                    .clickable { onToggleComplete(task, !task.isCompleted) },
                 contentAlignment = Alignment.Center
             ) {
-                if (task.isCompleted) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Completed",
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = if (task.isCompleted) "Completed" else "Not Completed",
+                    tint = if (task.isCompleted) {
+                        Color.White
+                    } else {
+                        // 미체크 상태: 테마에 따라 반투명 체크 아이콘 표시
+                        if (isDarkTheme) Color.White.copy(alpha = 0.3f)
+                        else Color.Gray.copy(alpha = 0.4f)
+                    },
+                    modifier = Modifier.size(18.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -351,21 +362,30 @@ fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) { //
         }
     }
 }
-    
+    @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TimelineSlotCard(
     slot: ScheduleSlot,
     modifier: Modifier = Modifier,
     onSlotLongClick: (String) -> Unit = {}
 ) {
-    val backgroundColor = when (slot.colorType) {
-        EventColorType.BLUE -> EventBlueBg
-        EventColorType.GREEN -> Color(0xFFE8F5E9)
-        EventColorType.GRAY -> Color(0xFFFAFAFA)
+    // MaterialTheme.colorScheme를 사용하여 앱의 테마 설정 감지
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    
+    // 다크모드에서는 항상 surface 배경 사용
+    val backgroundColor = if (isDarkTheme) {
+        MaterialTheme.colorScheme.surface
+    } else {
+        when (slot.colorType) {
+            EventColorType.BLUE -> SchedulePrimaryBg
+            EventColorType.GREEN -> ScheduleSecondaryBg
+            EventColorType.GRAY -> ScheduleTertiaryBg
+        }
     }
 
     val borderColor = when (slot.colorType) {
-        EventColorType.BLUE -> EventBlueBorder
+        EventColorType.BLUE -> if (isDarkTheme) SchedulePrimaryBorderDark else SchedulePrimaryBorder
+        EventColorType.GREEN -> if (isDarkTheme) ScheduleSecondaryBorderDark else ScheduleSecondaryBorder
         else -> Color.Transparent
     }
 
