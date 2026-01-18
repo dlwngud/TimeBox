@@ -46,6 +46,20 @@ val EventGreenBorder = Color(0xFF2ECC71)
 val EventBlueBg = Color(0xFFE3F2FD)
 val EventBlueBorder = Color(0xFF3F72E5)
 
+// Schedule Slot Colors (Light Mode)
+val SchedulePrimaryBg = Color(0xFFE3F2FD)        // Big Three - 파란색 계열
+val SchedulePrimaryBorder = Color(0xFF3F72E5)
+val ScheduleSecondaryBg = Color(0xFFE8EAF6)      // 일반 일정 - 인디고 계열 (Primary와 조화)
+val ScheduleSecondaryBorder = Color(0xFF5C6BC0)
+val ScheduleTertiaryBg = Color(0xFFF5F5F5)       // 기타 - 회색 계열
+
+// Schedule Slot Colors (Dark Mode)
+val SchedulePrimaryBgDark = Color(0xFF1A237E)    // Big Three - 어두운 파란색
+val SchedulePrimaryBorderDark = Color(0xFF5C6BC0)
+val ScheduleSecondaryBgDark = Color(0xFF283593)  // 일반 일정 - 어두운 인디고
+val ScheduleSecondaryBorderDark = Color(0xFF7986CB)
+val ScheduleTertiaryBgDark = Color(0xFF2C2C2C)   // 기타 - 어두운 회색
+
 // UI Element Colors
 val IconBlue = Color(0xFF4A89F7)
 val IconBlueBg = Color(0xFFE3EDFB)
