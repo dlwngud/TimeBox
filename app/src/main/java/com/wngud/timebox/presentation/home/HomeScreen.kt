@@ -720,6 +720,7 @@ fun TimelineSectionNew(
     val dragState = LocalDragAndDropState.current
     val density = LocalDensity.current
     var timelineCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val currentTime by rememberUpdatedState(LocalTime.now())
     
     val slotsByHour = remember(scheduleSlots) {
         scheduleSlots.groupBy { it.startTime.hour }
@@ -759,6 +760,14 @@ fun TimelineSectionNew(
                 }
             }
     ) {
+        // 현재 시간 인디케이터 (먼저 그려서 뒤에 배치)
+        timelineCoords?.let { coords ->
+            CurrentTimeIndicator(
+                currentTime = currentTime,
+                timelineHeight = coords.size.height
+            )
+        }
+        
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -811,6 +820,65 @@ fun TimelineSectionNew(
                 }
             }
         }
+    }
+}
+
+/**
+ * 현재 시간을 나타내는 인디케이터
+ * 빨간색 가로선과 시간 레이블로 구성
+ */
+@Composable
+fun CurrentTimeIndicator(
+    currentTime: LocalTime,
+    timelineHeight: Int
+) {
+    if (timelineHeight == 0) return
+    
+    // 현재 시간을 Y 위치로 변환 (성능 최적화: remember 사용)
+    val yPosition = remember(currentTime, timelineHeight) {
+        val totalMinutes = 24 * 60
+        val currentMinutes = currentTime.hour * 60 + currentTime.minute
+        (currentMinutes.toFloat() / totalMinutes) * timelineHeight
+    }
+    
+    // 테마에 맞는 색상 사용 (라이트/다크 모드 대응)
+    val indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+    
+    Row(
+        modifier = Modifier
+            .offset(y = with(LocalDensity.current) { yPosition.toDp() })
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 시간 레이블 (Primary 색상 배경)
+        Box(
+            modifier = Modifier
+                .width(90.dp)
+                .background(
+                    color = indicatorColor,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(horizontal = 12.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = String.format("%d:%02d", currentTime.hour, currentTime.minute),
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.White
+            )
+        }
+        
+        Spacer(modifier = Modifier.width(12.dp))
+        
+        // Primary 색상 가로선
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(2.dp)
+                .background(indicatorColor)
+        )
     }
 }
 
