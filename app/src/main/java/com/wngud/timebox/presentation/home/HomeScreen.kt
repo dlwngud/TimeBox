@@ -47,10 +47,12 @@ import com.wngud.timebox.presentation.components.TimeBoxerTopBar
 import com.wngud.timebox.ui.theme.TimeBoxTheme
 import java.time.LocalTime
 import java.time.Duration
+import java.time.LocalDate
 import kotlin.math.roundToInt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.graphics.luminance
 import com.wngud.timebox.ui.theme.*
+import com.wngud.timebox.util.toKoreanDateString
 import androidx.hilt.navigation.compose.hiltViewModel
 
 /**
@@ -301,6 +303,9 @@ fun DailySummaryCardNew(
     stats: DailyStats,
     onNavigateToStats: () -> Unit
 ) {
+    val currentDate = remember { LocalDate.now() }
+    val dateText = remember(currentDate) { currentDate.toKoreanDateString() }
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -322,7 +327,7 @@ fun DailySummaryCardNew(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "2025.11.18 (화) 오늘의 결과",
+                    text = dateText,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
