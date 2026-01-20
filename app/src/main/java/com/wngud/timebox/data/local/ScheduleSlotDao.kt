@@ -40,4 +40,11 @@ interface ScheduleSlotDao {
         endHour: Int,
         endMinute: Int
     ): List<ScheduleSlotEntity>
+    
+    @Query("SELECT * FROM schedule_slots WHERE dateMillis = :dateMillis AND startHour = :startHour AND startMinute = :startMinute LIMIT 1")
+    suspend fun getScheduleSlotAtTime(
+        dateMillis: Long,
+        startHour: Int,
+        startMinute: Int
+    ): ScheduleSlotEntity?
 }

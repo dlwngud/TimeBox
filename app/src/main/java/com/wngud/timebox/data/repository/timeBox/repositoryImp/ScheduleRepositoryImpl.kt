@@ -6,6 +6,7 @@ import com.wngud.timebox.data.local.toScheduleSlotEntity
 import com.wngud.timebox.data.modal.ScheduleSlot
 import com.wngud.timebox.domain.repository.ScheduleRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import java.time.LocalTime
@@ -52,5 +53,17 @@ class ScheduleRepositoryImpl @Inject constructor(
             endMinute = endTime.minute
         )
         return overlappingSlots.isEmpty()
+    }
+    
+    override suspend fun getScheduleSlotAtTime(
+        startTime: LocalTime,
+        date: LocalDate
+    ): ScheduleSlot? {
+        val entity = dao.getScheduleSlotAtTime(
+            dateMillis = date.toEpochDay(),
+            startHour = startTime.hour,
+            startMinute = startTime.minute
+        )
+        return entity?.toScheduleSlot()
     }
 }

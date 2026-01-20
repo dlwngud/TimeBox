@@ -44,4 +44,13 @@ interface ScheduleRepository {
         endTime: LocalTime, 
         date: LocalDate
     ): Boolean
+    
+    /**
+     * 특정 시간에 시작하는 일정 슬롯을 가져옵니다.
+     * @return 해당 시간에 시작하는 일정, 없으면 null
+     */
+    suspend fun getScheduleSlotAtTime(
+        startTime: LocalTime,
+        date: LocalDate
+    ): ScheduleSlot?
 }
