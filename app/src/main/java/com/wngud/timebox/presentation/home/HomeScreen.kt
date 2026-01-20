@@ -1,5 +1,8 @@
 package com.wngud.timebox.presentation.home
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -585,6 +588,24 @@ fun HourTimelineRow(
     val isTargetHour = dragState.isDragging && targetTime?.hour == hour
     val isTargetAt00 = isTargetHour && targetTime?.minute == 0
     
+    // 부드러운 색상 전환 애니메이션
+    val textColor by animateColorAsState(
+        targetValue = if (isTargetAt00) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            DisabledGray
+        },
+        animationSpec = tween(durationMillis = 200),
+        label = "textColor"
+    )
+    
+    // 부드러운 투명도 전환
+    val textAlpha by animateFloatAsState(
+        targetValue = if (isTargetAt00) 1f else 0.6f,
+        animationSpec = tween(durationMillis = 200),
+        label = "textAlpha"
+    )
+    
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top
@@ -597,21 +618,23 @@ fun HourTimelineRow(
             in 13..23 -> "오후 ${hour - 12}시"
             else -> ""
         }
-        Text(
-            text = formattedTime,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (isTargetAt00) {
-                MaterialTheme.colorScheme.primary // Primary 색상 강조
-            } else {
-                DisabledGray
-            },
-            fontWeight = if (isTargetAt00) {
-                FontWeight.Bold // Bold 강조
-            } else {
-                FontWeight.Normal
-            },
-            modifier = Modifier.width(90.dp)
-        )
+        
+        // Box로 감싸서 레이아웃 고정
+        Box(
+            modifier = Modifier
+                .width(90.dp)
+                .wrapContentHeight(),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = formattedTime,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold // 항상 SemiBold로 고정하여 레이아웃 변화 방지
+                ),
+                color = textColor,
+                modifier = Modifier.alpha(textAlpha)
+            )
+        }
 
         Spacer(modifier = Modifier.width(12.dp))
 
@@ -672,7 +695,7 @@ fun TimeSlotRow(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp) // 카드 높이와 동일하게 설정
+                .height(56.dp) // 카드 내용 높이와 동일하게 (padding 16dp * 2 + 텍스트 약 24dp)
                 .clickable {
                     onTimeSlotClick(LocalTime.of(hour, minute))
                 }
@@ -747,14 +770,22 @@ fun TimelineSectionNew(
             }
         }
         
-        // 30분 레이블 오버레이
+        // 30분 레이블 오버레이 (해당 시간대 정가운데 고정)
         if (dragState.isDragging && dragState.currentTargetTime != null) {
             val targetTime = dragState.currentTargetTime!!
             
             if (targetTime.minute == 30) {
-                // 30분 위치 계산
+                // 부드러운 페이드 인 애니메이션
+                val labelAlpha by animateFloatAsState(
+                    targetValue = 1f,
+                    animationSpec = tween(durationMillis = 200),
+                    label = "labelAlpha"
+                )
+                
+                // 해당 시간대의 정가운데 위치 계산
                 val hour = targetTime.hour
-                val rowHeight = 80.dp // HourTimelineRow 높이 (대략적)
+                // 각 HourTimelineRow의 대략적인 높이와 간격
+                val rowHeight = 152.dp // HourTimelineRow 높이 (64dp * 2 슬롯 + 8dp 간격 + 12dp 행간격)
                 val yPosition = (hour * rowHeight.value + rowHeight.value / 2).dp
                 
                 Box(
@@ -762,6 +793,7 @@ fun TimelineSectionNew(
                         .offset(y = yPosition)
                         .width(90.dp)
                         .padding(start = 8.dp)
+                        .alpha(labelAlpha)
                 ) {
                     Text(
                         text = "${targetTime.hour}:30",
