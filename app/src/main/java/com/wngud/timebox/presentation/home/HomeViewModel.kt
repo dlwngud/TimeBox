@@ -167,27 +167,67 @@ class HomeViewModel @Inject constructor(
     
     /**
      * 스케줄 슬롯 이동 (드래그앤드롭용)
+     * 타겟 위치에 일정이 있으면 서로 교환, 없으면 단순 이동
      */
-    fun moveScheduleSlot(slot: ScheduleSlot, newStartTime: LocalTime) {
+    fun moveScheduleSlot(
+        slot: ScheduleSlot, 
+        newStartTime: LocalTime,
+        date: LocalDate = LocalDate.now()
+    ) {
         viewModelScope.launch {
-            val duration = java.time.Duration.between(slot.startTime, slot.endTime)
-            val newEndTime = newStartTime.plus(duration)
-            
-            // 새 위치가 사용 가능한지 확인 (자기 자신 제외)
-            val isAvailable = scheduleRepository.isTimeSlotAvailable(
-                startTime = newStartTime,
-                endTime = newEndTime,
-                date = LocalDate.now()
-            )
-            
-            if (isAvailable) {
-                val updatedSlot = slot.copy(
+            try {
+                val duration = java.time.Duration.between(slot.startTime, slot.endTime)
+                val newEndTime = newStartTime.plus(duration)
+                
+                // 타겟 위치에 일정이 있는지 확인
+                val existingSlot = scheduleRepository.getScheduleSlotAtTime(
                     startTime = newStartTime,
-                    endTime = newEndTime
+                    date = date
                 )
-                scheduleRepository.updateScheduleSlot(updatedSlot)
+                
+                if (existingSlot != null && existingSlot.id != slot.id) {
+                    // 타겟 위치에 다른 일정이 있으면 서로 교환
+                    swapScheduleSlots(slot, existingSlot)
+                } else {
+                    // 타겟 위치가 비어있으면 단순 이동
+                    val updatedSlot = slot.copy(
+                        startTime = newStartTime,
+                        endTime = newEndTime
+                    )
+                    scheduleRepository.updateScheduleSlot(updatedSlot)
+                }
+            } catch (e: Exception) {
+                // 에러 로깅
+                android.util.Log.e("HomeViewModel", "Failed to move schedule slot", e)
+                // TODO: 사용자에게 에러 메시지 표시 (필요시 State로 관리)
             }
         }
+    }
+    
+    /**
+     * 두 일정의 시간을 서로 교환
+     * suspend 함수로 변경하여 중첩 코루틴 제거
+     */
+    private suspend fun swapScheduleSlots(slot1: ScheduleSlot, slot2: ScheduleSlot) {
+        // slot1의 시간을 임시 저장
+        val temp1Start = slot1.startTime
+        val temp1End = slot1.endTime
+        
+        // slot1을 slot2의 시간으로 업데이트
+        val updatedSlot1 = slot1.copy(
+            startTime = slot2.startTime,
+            endTime = slot2.endTime
+        )
+        
+        // slot2를 slot1의 원래 시간으로 업데이트
+        val updatedSlot2 = slot2.copy(
+            startTime = temp1Start,
+            endTime = temp1End
+        )
+        
+        // 두 일정 모두 업데이트 (순차적으로 실행되어 원자성 보장)
+        scheduleRepository.updateScheduleSlot(updatedSlot1)
+        scheduleRepository.updateScheduleSlot(updatedSlot2)
     }
     
     /**
