@@ -8,10 +8,13 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wngud.timebox.presentation.ThemeViewModel
 
@@ -58,6 +61,19 @@ fun TimeBoxTheme(
         }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+    
+    // 상태바 아이콘 색상 설정
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? android.app.Activity)?.window ?: return@SideEffect
+            WindowCompat.getInsetsController(window, view).apply {
+                // 라이트 모드: 어두운 아이콘 (true)
+                // 다크 모드: 밝은 아이콘 (false)
+                isAppearanceLightStatusBars = !darkTheme
+            }
+        }
     }
 
     MaterialTheme(
