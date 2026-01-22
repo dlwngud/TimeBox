@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BrainDumpDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBrainDumpItem(item: BrainDumpEntity)
+    suspend fun insertBrainDumpItem(item: BrainDumpEntity): Long
 
     @Query("SELECT * FROM brain_dump_items ORDER BY timestamp DESC")
     fun getBrainDumpItems(): Flow<List<BrainDumpEntity>>

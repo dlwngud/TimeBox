@@ -9,8 +9,8 @@ import javax.inject.Inject
 class BrainDumpRepositoryImpl @Inject constructor(
     private val dao: BrainDumpDao
 ) : BrainDumpRepository {
-    override suspend fun insertBrainDumpItem(item: BrainDumpEntity) {
-        dao.insertBrainDumpItem(item)
+    override suspend fun insertBrainDumpItem(item: BrainDumpEntity): Long {
+        return dao.insertBrainDumpItem(item)
     }
 
     override fun getBrainDumpItems(): Flow<List<BrainDumpEntity>> {

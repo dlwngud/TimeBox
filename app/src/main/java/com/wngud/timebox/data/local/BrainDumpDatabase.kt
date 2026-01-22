@@ -20,7 +20,7 @@ class Converters {
 
 @Database(
     entities = [BrainDumpEntity::class, ScheduleSlotEntity::class], 
-    version = 3,
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
