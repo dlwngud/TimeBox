@@ -217,6 +217,9 @@ fun HomeScreen(
                 onItemSelected = { item ->
                     viewModel.placeBrainDumpItem(item, selectedTimeSlot!!.first)
                 },
+                onDirectEntry = { title ->
+                    viewModel.addDirectScheduleSlot(title, selectedTimeSlot!!.first)
+                },
                 onDismiss = viewModel::dismissBrainDumpSelector
             )
         }

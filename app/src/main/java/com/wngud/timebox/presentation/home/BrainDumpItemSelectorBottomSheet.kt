@@ -34,9 +34,11 @@ fun BrainDumpItemSelectorBottomSheet(
     items: List<BrainDumpItem>,
     selectedTimeSlot: Pair<LocalTime, LocalTime>,
     onItemSelected: (BrainDumpItem) -> Unit,
+    onDirectEntry: (String) -> Unit, // 직접 입력 시 호출되는 콜백 추가
     onDismiss: () -> Unit
 ) {
     var selectedItem by remember { mutableStateOf<BrainDumpItem?>(null) }
+    var directEntryText by remember { mutableStateOf("") }
     
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -66,6 +68,40 @@ fun BrainDumpItemSelectorBottomSheet(
                     color = DisabledGray
                 )
             }
+
+            // 직접 입력 영역 (추가됨)
+            OutlinedTextField(
+                value = directEntryText,
+                onValueChange = { 
+                    directEntryText = it
+                    if (it.isNotBlank()) selectedItem = null // 텍스트 입력 시 리스트 선택 해제
+                },
+                placeholder = { 
+                    Text(
+                        text = "무엇을 할까요?",
+                        color = DisabledGray.copy(alpha = 0.6f)
+                    ) 
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = SwitchBlue,
+                    unfocusedBorderColor = DisabledGray.copy(alpha = 0.3f)
+                ),
+                singleLine = true
+            )
+
+            // 구분선 및 리스트 헤더 (추가됨)
+            Text(
+                text = "또는 BrainDump에서 가져오기",
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = DisabledGray,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
             
             // Items list
             if (items.isEmpty()) {
@@ -87,43 +123,51 @@ fun BrainDumpItemSelectorBottomSheet(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f, fill = false)
-                        .heightIn(max = 400.dp)
+                        .heightIn(max = 300.dp) // 입력창이 추가되어 최대 높이 소폭 조정
                 ) {
                     items(items) { item ->
                         BrainDumpItemOptionCard(
                             item = item,
                             isSelected = selectedItem == item,
-                            onClick = { selectedItem = item }
+                            onClick = { 
+                                selectedItem = item
+                                directEntryText = "" // 리스트 선택 시 직접 입력 텍스트 초기화
+                            }
                         )
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(20.dp))
-                
-                // Confirm Button
-                Button(
-                    onClick = {
-                        selectedItem?.let { onItemSelected(it) }
-                    },
-                    enabled = selectedItem != null,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = SwitchBlue,
-                        disabledContainerColor = DisabledGray
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp)
-                ) {
-                    Text(
-                        text = "확인",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // Confirm Button
+            val isEnabled = directEntryText.isNotBlank() || selectedItem != null
+            Button(
+                onClick = {
+                    if (directEntryText.isNotBlank()) {
+                        onDirectEntry(directEntryText)
+                    } else if (selectedItem != null) {
+                        onItemSelected(selectedItem!!)
+                    }
+                },
+                enabled = isEnabled,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = SwitchBlue,
+                    disabledContainerColor = DisabledGray
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            ) {
+                Text(
+                    text = "확인",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = Color.White
                     )
-                }
+                )
             }
         }
     }

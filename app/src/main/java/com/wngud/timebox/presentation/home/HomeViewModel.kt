@@ -157,6 +157,47 @@ class HomeViewModel @Inject constructor(
     }
     
     /**
+     * 직접 입력한 제목으로 일정을 타임라인에 즉시 배치
+     */
+    fun addDirectScheduleSlot(title: String, startTime: LocalTime, durationMinutes: Int = 30) {
+        viewModelScope.launch {
+            val endTime = startTime.plusMinutes(durationMinutes.toLong())
+            
+            // 시간대 중복 확인
+            val isAvailable = scheduleRepository.isTimeSlotAvailable(
+                startTime = startTime,
+                endTime = endTime,
+                date = LocalDate.now()
+            )
+            
+            if (isAvailable && title.isNotBlank()) {
+                // 1. BrainDump 아이템 먼저 생성 및 저장
+                val brainDumpEntity = com.wngud.timebox.data.local.BrainDumpEntity(
+                    content = title,
+                    timestamp = java.util.Date(),
+                    isBigThree = false
+                )
+                val newItemId = brainDumpRepository.insertBrainDumpItem(brainDumpEntity)
+
+                // 2. 생성된 ID를 사용하여 스케줄 슬롯 저장
+                val scheduleSlot = ScheduleSlot(
+                    brainDumpItemId = newItemId,
+                    title = title,
+                    startTime = startTime,
+                    endTime = endTime,
+                    colorType = EventColorType.GREEN,
+                    date = LocalDate.now()
+                )
+                
+                scheduleRepository.insertScheduleSlot(scheduleSlot)
+                
+                // BottomSheet 닫기
+                dismissBrainDumpSelector()
+            }
+        }
+    }
+    
+    /**
      * 스케줄 슬롯 제거
      */
     fun removeScheduleSlot(slotId: String) {
