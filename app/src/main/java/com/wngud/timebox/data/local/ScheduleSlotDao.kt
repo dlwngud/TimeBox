@@ -47,4 +47,10 @@ interface ScheduleSlotDao {
         startHour: Int,
         startMinute: Int
     ): ScheduleSlotEntity?
+    
+    /**
+     * BrainDump 아이템 ID로 연결된 모든 일정 슬롯의 색상을 업데이트합니다.
+     */
+    @Query("UPDATE schedule_slots SET colorType = :colorType WHERE brainDumpItemId = :brainDumpItemId")
+    suspend fun updateColorTypeByBrainDumpId(brainDumpItemId: Long, colorType: String)
 }

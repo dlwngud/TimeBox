@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.wngud.timebox.data.local.BrainDumpEntity
 import com.wngud.timebox.data.local.toBrainDumpItem
 import com.wngud.timebox.domain.repository.BrainDumpRepository
+import com.wngud.timebox.domain.repository.ScheduleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,7 +57,8 @@ sealed class BrainDumpIntent {
 
 @HiltViewModel
 class BrainDumpViewModel @Inject constructor(
-    private val repository: BrainDumpRepository
+    private val repository: BrainDumpRepository,
+    private val scheduleRepository: ScheduleRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BrainDumpUiState())
@@ -248,6 +250,10 @@ class BrainDumpViewModel @Inject constructor(
                                     isBigThree = newBigThreeState
                                 )
                             )
+                            
+                            // 연결된 스케줄 슬롯의 색상도 업데이트
+                            scheduleRepository.updateScheduleColorByBrainDumpId(item.id, newBigThreeState)
+                            
                             print("BrainDumpViewModel: Big Three toggled successfully for item: $itemId to $newBigThreeState")
                             // UI 상태 업데이트는 collectBrainDumpItems()를 통해 자동으로 이루어질 것임
                         } catch (e: Exception) {

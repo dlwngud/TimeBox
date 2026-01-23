@@ -66,4 +66,9 @@ class ScheduleRepositoryImpl @Inject constructor(
         )
         return entity?.toScheduleSlot()
     }
+    
+    override suspend fun updateScheduleColorByBrainDumpId(brainDumpItemId: Long, isBigThree: Boolean) {
+        val colorType = if (isBigThree) com.wngud.timebox.data.modal.EventColorType.BLUE else com.wngud.timebox.data.modal.EventColorType.GREEN
+        dao.updateColorTypeByBrainDumpId(brainDumpItemId, colorType.name)
+    }
 }

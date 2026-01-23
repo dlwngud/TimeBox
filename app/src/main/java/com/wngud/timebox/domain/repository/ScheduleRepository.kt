@@ -53,4 +53,11 @@ interface ScheduleRepository {
         startTime: LocalTime,
         date: LocalDate
     ): ScheduleSlot?
+    
+    /**
+     * BrainDump 아이템 ID로 연결된 모든 일정 슬롯의 색상을 업데이트합니다.
+     * @param brainDumpItemId BrainDump 아이템 ID
+     * @param isBigThree Big Three 여부 (true면 BLUE, false면 GREEN)
+     */
+    suspend fun updateScheduleColorByBrainDumpId(brainDumpItemId: Long, isBigThree: Boolean)
 }
