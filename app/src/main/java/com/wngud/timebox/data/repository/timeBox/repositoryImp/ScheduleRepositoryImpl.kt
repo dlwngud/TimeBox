@@ -71,4 +71,8 @@ class ScheduleRepositoryImpl @Inject constructor(
         val colorType = if (isBigThree) com.wngud.timebox.data.modal.EventColorType.BLUE else com.wngud.timebox.data.modal.EventColorType.GREEN
         dao.updateColorTypeByBrainDumpId(brainDumpItemId, colorType.name)
     }
+    
+    override suspend fun deleteAllScheduleSlots() {
+        dao.deleteAllScheduleSlots()
+    }
 }

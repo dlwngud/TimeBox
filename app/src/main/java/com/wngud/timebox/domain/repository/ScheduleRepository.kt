@@ -60,4 +60,9 @@ interface ScheduleRepository {
      * @param isBigThree Big Three 여부 (true면 BLUE, false면 GREEN)
      */
     suspend fun updateScheduleColorByBrainDumpId(brainDumpItemId: Long, isBigThree: Boolean)
+    
+    /**
+     * 모든 일정 슬롯을 삭제합니다.
+     */
+    suspend fun deleteAllScheduleSlots()
 }

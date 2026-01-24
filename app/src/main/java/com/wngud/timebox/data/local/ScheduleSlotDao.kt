@@ -53,4 +53,10 @@ interface ScheduleSlotDao {
      */
     @Query("UPDATE schedule_slots SET colorType = :colorType WHERE brainDumpItemId = :brainDumpItemId")
     suspend fun updateColorTypeByBrainDumpId(brainDumpItemId: Long, colorType: String)
+    
+    /**
+     * 모든 일정 슬롯을 삭제합니다.
+     */
+    @Query("DELETE FROM schedule_slots")
+    suspend fun deleteAllScheduleSlots()
 }
