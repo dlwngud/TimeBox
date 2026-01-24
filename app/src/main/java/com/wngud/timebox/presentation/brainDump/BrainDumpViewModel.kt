@@ -128,7 +128,10 @@ class BrainDumpViewModel @Inject constructor(
                         // BrainDumpItem에 timestamp가 있으므로, 이 정보를 저장
                         _uiState.update { it.copy(lastDeletedItem = item) }
                         try {
+                            // 브레인덤프 아이템 삭제
                             repository.deleteBrainDumpItem(deletedItemId)
+                            // 연결된 타임라인 일정도 삭제
+                            scheduleRepository.deleteScheduleSlotsByBrainDumpId(deletedItemId)
                             print("BrainDumpViewModel: Item deleted successfully: ${item.id}")
                             // 스낵바 이벤트를 발행
                             _snackbarEvent.send(SnackbarEvent(
@@ -166,7 +169,10 @@ class BrainDumpViewModel @Inject constructor(
             BrainDumpIntent.ClearAllItems -> {
                 viewModelScope.launch {
                     try {
+                        // 모든 브레인덤프 아이템 삭제
                         repository.deleteAllBrainDumpItems()
+                        // 모든 타임라인 일정도 삭제
+                        scheduleRepository.deleteAllScheduleSlots()
                         print("BrainDumpViewModel: All items cleared successfully")
                     } catch (e: Exception) {
                         _uiState.update { it.copy(error = e.localizedMessage) }
