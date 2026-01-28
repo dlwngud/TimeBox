@@ -48,7 +48,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.wngud.timebox.ui.theme.TimeBoxTheme
 import kotlinx.coroutines.launch
 
 // 색상 정의 (업로드된 디자인 기반)
@@ -961,5 +963,124 @@ fun DropTargetTimeSlotCard(
                 fontWeight = if (slot.isAiRecommended) FontWeight.Bold else FontWeight.Normal
             )
         }
+    }
+}
+
+// ============ Previews ============
+@Preview(showBackground = true)
+@Composable
+fun Phase1DumpScreenPreview() {
+    TimeBoxTheme {
+        Phase1DumpScreen(
+            userInputItems = listOf(
+                OnBoardingItem(
+                    id = 2,
+                    title = "프로젝트 기획서 작성",
+                    category = "업무",
+                    duration = "1시간",
+                    isAiRecommended = false,
+                    isChecked = false
+                ),
+                OnBoardingItem(
+                    id = 1,
+                    title = "운동하기",
+                    category = "건강",
+                    duration = "30분",
+                    isAiRecommended = false,
+                    isChecked = false
+                )
+            ),
+            sampleItems = listOf(
+                OnBoardingItem(
+                    id = 0,
+                    title = "이메일 확인",
+                    category = "업무",
+                    duration = "15분",
+                    isAiRecommended = false,
+                    isChecked = false
+                )
+            ),
+            inputText = "",
+            canProceed = false,
+            onInputChange = {},
+            onAddItem = {},
+            onNext = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF0A0E27)
+@Composable
+fun Phase2SelectScreenPreview() {
+    TimeBoxTheme {
+        Phase2SelectScreen(
+            items = listOf(
+                OnBoardingItem(
+                    id = 2,
+                    title = "프로젝트 기획서 작성",
+                    category = "업무",
+                    duration = "1시간",
+                    isAiRecommended = true,
+                    isChecked = false
+                ),
+                OnBoardingItem(
+                    id = 1,
+                    title = "운동하기",
+                    category = "건강",
+                    duration = "30분",
+                    isAiRecommended = true,
+                    isChecked = false
+                ),
+                OnBoardingItem(
+                    id = 0,
+                    title = "이메일 확인",
+                    category = "업무",
+                    duration = "15분",
+                    isAiRecommended = false,
+                    isChecked = false
+                )
+            ),
+            selectedItemIds = setOf(2, 1),
+            onToggleSelection = {},
+            onNext = {},
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF0A0E27)
+@Composable
+fun Phase3BoxScreenPreview() {
+    TimeBoxTheme {
+        Phase3BoxScreen(
+            selectedItems = listOf(
+                OnBoardingItem(
+                    id = 2,
+                    title = "프로젝트 기획서 작성",
+                    category = "업무",
+                    duration = "1시간",
+                    isAiRecommended = true,
+                    isChecked = false
+                ),
+                OnBoardingItem(
+                    id = 1,
+                    title = "운동하기",
+                    category = "건강",
+                    duration = "30분",
+                    isAiRecommended = true,
+                    isChecked = false
+                ),
+                OnBoardingItem(
+                    id = 0,
+                    title = "독서",
+                    category = "자기계발",
+                    duration = "45분",
+                    isAiRecommended = true,
+                    isChecked = false
+                )
+            ),
+            onComplete = {},
+            onBack = {}
+        )
     }
 }
