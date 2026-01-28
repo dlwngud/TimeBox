@@ -3,7 +3,6 @@ package com.wngud.timebox.presentation.setting
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,20 +27,19 @@ import com.wngud.timebox.ui.theme.IconBlue
 import com.wngud.timebox.ui.theme.IconBlueBg
 import com.wngud.timebox.ui.theme.SubtitleGray
 import com.wngud.timebox.ui.theme.SwitchBlue
+import com.wngud.timebox.ui.theme.TimeBoxTheme
 
-// ------------------------------------------------------------------------
-// 2. Stateful Composable (상태를 관리하는 최상위 컴포저블)
-// ------------------------------------------------------------------------
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * [Stateful] 설정 화면의 Route 컴포저블
+ */
 @Composable
-fun SettingScreen(
+fun SettingRoute(
     onBack: () -> Unit,
     viewModel: SettingViewModel = hiltViewModel()
 ) {
-    // ViewModel에서 UI 상태를 수집
     val uiState by viewModel.uiState.collectAsState()
 
-    SettingContent(
+    SettingScreen(
         uiState = uiState,
         onBack = onBack,
         onNotificationToggle = { viewModel.processIntent(SettingIntent.ToggleNotification(it)) },
@@ -53,12 +51,12 @@ fun SettingScreen(
     )
 }
 
-// ------------------------------------------------------------------------
-// 3. Stateless Composable (UI 렌더링 전담)
-// ------------------------------------------------------------------------
+/**
+ * [Stateless] 설정 UI 컴포저블
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingContent(
+fun SettingScreen(
     uiState: SettingUiState,
     onBack: () -> Unit,
     onNotificationToggle: (Boolean) -> Unit,
@@ -72,457 +70,110 @@ fun SettingContent(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        text = "설정",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    )
+                    Text(text = "설정", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 18.sp))
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "뒤로가기"
-                        )
-                    }
+                    IconButton(onClick = onBack) { Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "뒤로가기") }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier = Modifier.padding(paddingValues).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 1. 알림 받기 (Switch)
-            SettingItemCard(
-                icon = "🔔",
-                iconColor = IconBlue,
-                iconBgColor = IconBlueBg,
-                title = "알림 받기",
-                control = {
-                    Switch(
-                        checked = uiState.isNotificationEnabled,
-                        onCheckedChange = onNotificationToggle,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = SwitchBlue,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = BorderGray,
-                            uncheckedBorderColor = Color.Transparent
-                        )
-                    )
-                }
-            )
-
-            // 2. 알림 시간 (Dropdown/Text)
-            SettingItemCard(
-                icon = "⏰",
-                iconColor = Color(0xFF9C27B0),
-                iconBgColor = Color(0xFFF3E5F5),
-                title = "알림 시간",
-                onClick = onTimeClick,
-                control = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = uiState.notificationTime,
-                            color = SwitchBlue,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                        // 드롭다운 화살표 아이콘이 필요하다면 추가 (이미지 상에는 텍스트 옆 쉐브론)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        // Icon(Icons.Default.KeyboardArrowDown, ..., tint = Color(0xFF186EF2))
-                    }
-                }
-            )
-
-            // 3. 진동 (Switch)
-            SettingItemCard(
-                icon = "📳",
-                iconColor = Color(0xFF4CAF50),
-                iconBgColor = Color(0xFFE8F5E9),
-                title = "진동",
-                control = {
-                    Switch(
-                        checked = uiState.isVibrationEnabled,
-                        onCheckedChange = onVibrationToggle,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = SwitchBlue,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = BorderGray,
-                            uncheckedBorderColor = Color.Transparent
-                        )
-                    )
-                }
-            )
-
-            // 4. 테마 (Text)
-            SettingItemCard(
-                icon = if (uiState.themeMode == "라이트") "☀️" else "🌙",
-                iconColor = Color(0xFFFF9800),
-                iconBgColor = Color(0xFFFFF3E0),
-                title = "테마",
-                onClick = onThemeClick,
-                control = {
-                    Text(
-                        text = uiState.themeMode,
-                        color = SwitchBlue,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
-                    )
-                }
-            )
-
-            // 5. 캘린더 연동 (Disabled, Subtext)
-            SettingItemCard(
-                icon = "📅",
-                iconColor = Color(0xFF9E9E9E),
-                iconBgColor = Color(0xFFEEEEEE),
-                title = "캘린더 연동",
-                subTitle = "곧 오픈돼요",
-                enabled = false,
-                control = {
-                    Switch(
-                        checked = false,
-                        onCheckedChange = null,
-                        enabled = false,
-                        colors = SwitchDefaults.colors(
-                            disabledCheckedTrackColor = Color(0xFFE0E0E0),
-                            disabledUncheckedTrackColor = Color(0xFFEEEEEE),
-                            disabledUncheckedThumbColor = Color.White
-                        )
-                    )
-                }
-            )
-
-            // 6. 앱 버전 (Info)
-            SettingItemCard(
-                icon = "ℹ️",
-                iconColor = Color(0xFF616161),
-                iconBgColor = Color(0xFFECEFF1),
-                title = "앱 버전",
-                control = {
-                    Text(
-                        text = uiState.appVersion,
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
-            )
+            SettingItemCard(icon = "🔔", iconColor = IconBlue, iconBgColor = IconBlueBg, title = "알림 받기", control = { Switch(checked = uiState.isNotificationEnabled, onCheckedChange = onNotificationToggle, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = SwitchBlue, uncheckedThumbColor = Color.White, uncheckedTrackColor = BorderGray, uncheckedBorderColor = Color.Transparent)) })
+            SettingItemCard(icon = "⏰", iconColor = Color(0xFF9C27B0), iconBgColor = Color(0xFFF3E5F5), title = "알림 시간", onClick = onTimeClick, control = { Row(verticalAlignment = Alignment.CenterVertically) { Text(text = uiState.notificationTime, color = SwitchBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp); Spacer(modifier = Modifier.width(4.dp)) } })
+            SettingItemCard(icon = "📳", iconColor = Color(0xFF4CAF50), iconBgColor = Color(0xFFE8F5E9), title = "진동", control = { Switch(checked = uiState.isVibrationEnabled, onCheckedChange = onVibrationToggle, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = SwitchBlue, uncheckedThumbColor = Color.White, uncheckedTrackColor = BorderGray, uncheckedBorderColor = Color.Transparent)) })
+            SettingItemCard(icon = if (uiState.themeMode == "라이트") "☀️" else "🌙", iconColor = Color(0xFFFF9800), iconBgColor = Color(0xFFFFF3E0), title = "테마", onClick = onThemeClick, control = { Text(text = uiState.themeMode, color = SwitchBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp) })
+            SettingItemCard(icon = "📅", iconColor = Color(0xFF9E9E9E), iconBgColor = Color(0xFFEEEEEE), title = "캘린더 연동", subTitle = "곧 오픈돼요", enabled = false, control = { Switch(checked = false, onCheckedChange = null, enabled = false, colors = SwitchDefaults.colors(disabledCheckedTrackColor = Color(0xFFE0E0E0), disabledUncheckedTrackColor = Color(0xFFEEEEEE), disabledUncheckedThumbColor = Color.White)) })
+            SettingItemCard(icon = "ℹ️", iconColor = Color(0xFF616161), iconBgColor = Color(0xFFECEFF1), title = "앱 버전", control = { Text(text = uiState.appVersion, color = Color.Gray, fontSize = 14.sp) })
         }
     }
     
-    // 테마 선택 다이얼로그
     if (uiState.showThemeDialog) {
-        ThemeSelectionDialog(
-            currentTheme = uiState.themeMode,
-            onDismiss = onDismissThemeDialog,
-            onThemeSelected = onThemeSelected
-        )
+        ThemeSelectionDialog(currentTheme = uiState.themeMode, onDismiss = onDismissThemeDialog, onThemeSelected = onThemeSelected)
     }
 }
 
-// ------------------------------------------------------------------------
-// 4. Reusable Components (재사용 가능한 컴포넌트)
-// ------------------------------------------------------------------------
-
 @Composable
-fun SettingItemCard(
-    icon: String,
-    iconColor: Color,
-    iconBgColor: Color,
-    title: String,
-    subTitle: String? = null,
-    control: @Composable () -> Unit,
-    onClick: (() -> Unit)? = null,
-    enabled: Boolean = true
-) {
-    // MaterialTheme.colorScheme를 사용하여 앱의 테마 설정 감지
+fun SettingItemCard(icon: String, iconColor: Color, iconBgColor: Color, title: String, subTitle: String? = null, control: @Composable () -> Unit, onClick: (() -> Unit)? = null, enabled: Boolean = true) {
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .then(
-                if (onClick != null && enabled) Modifier.clickable { onClick() } else Modifier
-            ),
+        modifier = Modifier.fillMaxWidth().height(72.dp).clip(RoundedCornerShape(20.dp)).then(if (onClick != null && enabled) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // 아이콘 박스
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (isDarkTheme) {
-                                // 다크모드에서는 더 어두운 색상 사용
-                                iconBgColor.copy(alpha = 0.3f)
-                            } else {
-                                iconBgColor
-                            }
-                        )
-                ) {
-                    Text(
-                        text = icon,
-                        fontSize = 16.sp
-                    )
-                }
-
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp).clip(CircleShape).background(if (isDarkTheme) iconBgColor.copy(alpha = 0.3f) else iconBgColor)) { Text(text = icon, fontSize = 16.sp) }
                 Spacer(modifier = Modifier.width(16.dp))
-
-                // 텍스트 영역
                 Column(verticalArrangement = Arrangement.Center) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = 16.sp,
-                            color = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray
-                        )
-                    )
-                    if (subTitle != null) {
-                        Text(
-                            text = subTitle,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = SubtitleGray,
-                                fontSize = 12.sp
-                            )
-                        )
-                    }
+                    Text(text = title, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, color = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray))
+                    if (subTitle != null) Text(text = subTitle, style = MaterialTheme.typography.bodySmall.copy(color = SubtitleGray, fontSize = 12.sp))
                 }
             }
-
-            // 우측 컨트롤 (Switch or Text)
             control()
         }
     }
 }
 
-/**
- * 토스 스타일의 테마 선택 다이얼로그
- */
 @Composable
-fun ThemeSelectionDialog(
-    currentTheme: String,
-    onDismiss: () -> Unit,
-    onThemeSelected: (String) -> Unit
-) {
+fun ThemeSelectionDialog(currentTheme: String, onDismiss: () -> Unit, onThemeSelected: (String) -> Unit) {
     var selectedTheme by remember { mutableStateOf(currentTheme) }
-    
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(24.dp),
-        title = {
-            Text(
-                text = "테마 선택",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        },
+        title = { Text(text = "테마 선택", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontSize = 20.sp), modifier = Modifier.padding(top = 8.dp)) },
         text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // 시스템 모드 옵션
-                ThemeOptionItem(
-                    icon = "⚙️",
-                    title = "시스템",
-                    description = "기기 설정을 따릅니다",
-                    isSelected = selectedTheme == "시스템",
-                    onClick = { selectedTheme = "시스템" }
-                )
-                
-                // 라이트 모드 옵션
-                ThemeOptionItem(
-                    icon = "☀️",
-                    title = "라이트",
-                    description = "밝은 테마",
-                    isSelected = selectedTheme == "라이트",
-                    onClick = { selectedTheme = "라이트" }
-                )
-                
-                // 다크 모드 옵션
-                ThemeOptionItem(
-                    icon = "🌙",
-                    title = "다크",
-                    description = "어두운 테마",
-                    isSelected = selectedTheme == "다크",
-                    onClick = { selectedTheme = "다크" }
-                )
+            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                ThemeOptionItem(icon = "⚙️", title = "시스템", description = "기기 설정을 따릅니다", isSelected = selectedTheme == "시스템", onClick = { selectedTheme = "시스템" })
+                ThemeOptionItem(icon = "☀️", title = "라이트", description = "밝은 테마", isSelected = selectedTheme == "라이트", onClick = { selectedTheme = "라이트" })
+                ThemeOptionItem(icon = "🌙", title = "다크", description = "어두운 테마", isSelected = selectedTheme == "다크", onClick = { selectedTheme = "다크" })
             }
         },
-        confirmButton = {
-            Button(
-                onClick = {
-                    onThemeSelected(selectedTheme)
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = SwitchBlue
-                ),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Text(
-                    text = "확인",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color.White
-                    )
-                )
-            }
-        },
-        dismissButton = null
+        confirmButton = { Button(onClick = { onThemeSelected(selectedTheme) }, colors = ButtonDefaults.buttonColors(containerColor = SwitchBlue), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(text = "확인", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp), color = Color.White) } }
     )
 }
 
-/**
- * 테마 선택 옵션 아이템 (토스 스타일)
- */
 @Composable
-fun ThemeOptionItem(
-    icon: String,
-    title: String,
-    description: String? = null,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
+fun ThemeOptionItem(icon: String, title: String, description: String? = null, isSelected: Boolean, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(if (description != null) 72.dp else 64.dp)
-            .clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().height(if (description != null) 72.dp else 64.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) IconBlueBg else MaterialTheme.colorScheme.background
-        ),
-        border = if (isSelected) BorderStroke(2.dp, SwitchBlue) else null,
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        colors = CardDefaults.cardColors(containerColor = if (isSelected) IconBlueBg else MaterialTheme.colorScheme.background),
+        border = if (isSelected) BorderStroke(2.dp, SwitchBlue) else null
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // 아이콘
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(if (isSelected) SwitchBlue.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface)
-                ) {
-                    Text(
-                        text = icon,
-                        fontSize = 20.sp
-                    )
-                }
-                
-                // 제목 및 설명
+        Row(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp).clip(CircleShape).background(if (isSelected) SwitchBlue.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface)) { Text(text = icon, fontSize = 20.sp) }
                 Column {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = 16.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) SwitchBlue else MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                    if (description != null) {
-                        Text(
-                            text = description,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontSize = 12.sp,
-                                color = SubtitleGray
-                            )
-                        )
-                    }
+                    Text(text = title, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) SwitchBlue else MaterialTheme.colorScheme.onSurface))
+                    if (description != null) Text(text = description, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, color = SubtitleGray))
                 }
             }
-            
-            // 선택 표시
-            if (isSelected) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(SwitchBlue)
-                ) {
-                    Text(
-                        text = "✓",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            if (isSelected) Box(contentAlignment = Alignment.Center, modifier = Modifier.size(24.dp).clip(CircleShape).background(SwitchBlue)) { Text(text = "✓", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold) }
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ThemeSelectionDialogPreview() {
-    MaterialTheme {
-        ThemeSelectionDialog("라이트", {}, {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ThemeOptionItemPreview() {
-    MaterialTheme {
-        ThemeOptionItem("☀️", "라이트", isSelected = true, onClick = {})
-    }
-}
-
-// ------------------------------------------------------------------------
-// Preview
-// ------------------------------------------------------------------------
-@Preview(showBackground = true)
-@Composable
 fun SettingScreenPreview() {
-    MaterialTheme {
-        SettingScreen(onBack = {})
+    TimeBoxTheme {
+        SettingScreen(
+            uiState = SettingUiState(themeMode = "시스템"),
+            onBack = {},
+            onNotificationToggle = {},
+            onVibrationToggle = {},
+            onTimeClick = {},
+            onThemeClick = {},
+            onDismissThemeDialog = {},
+            onThemeSelected = {}
+        )
     }
 }

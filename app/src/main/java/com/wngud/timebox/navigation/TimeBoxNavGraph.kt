@@ -2,18 +2,15 @@ package com.wngud.timebox.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.wngud.timebox.presentation.brainDump.BrainDumpScreen
-import com.wngud.timebox.presentation.home.HomeScreen
-import com.wngud.timebox.presentation.onBoarding.OnBoardingScreen
-import com.wngud.timebox.presentation.setting.SettingScreen
-import com.wngud.timebox.presentation.stats.StatsScreen
+import com.wngud.timebox.presentation.brainDump.BrainDumpRoute
+import com.wngud.timebox.presentation.home.HomeRoute
+import com.wngud.timebox.presentation.onBoarding.OnBoardingRoute
+import com.wngud.timebox.presentation.setting.SettingRoute
+import com.wngud.timebox.presentation.stats.StatsRoute
 
 @Composable
 fun TimeBoxNavGraph(
@@ -46,9 +43,8 @@ fun TimeBoxNavGraph(
 
             // 온보딩 → 완료 시 Home으로 이동 (popUpTo 로직)
             entry<Screen.OnBoarding> {
-                OnBoardingScreen(
+                OnBoardingRoute(
                     onComplete = {
-                        // ❌ popUpTo(Screen.OnBoarding) { inclusive = true } 로직 구현
                         // 백 스택을 Home만 남기고 OnBoarding 제거
                         backStack.clear()
                         backStack.add(Screen.Home)
@@ -58,26 +54,25 @@ fun TimeBoxNavGraph(
 
             // 홈
             entry<Screen.Home> {
-                HomeScreen(
+                HomeRoute(
                     onNavigateToStats = { navigate(Screen.Stats) },
                     onNavigateToBrainDump = { navigate(Screen.BrainDump) },
                     onNavigateToSetting = { navigate(Screen.Setting) }
                 )
             }
 
-            // 통계 (popBackStack() 로직)
             entry<Screen.Stats> {
-                StatsScreen(onBack = onBack)
+                StatsRoute(onBack = onBack)
             }
 
-            // 브레인덤프 (popBackStack() 로직)
+            // 브레인덤프
             entry<Screen.BrainDump> {
-                BrainDumpScreen(onBack = onBack)
+                BrainDumpRoute(onBack = onBack)
             }
 
-            // 설정 (popBackStack() 로직)
+            // 설정
             entry<Screen.Setting> {
-                SettingScreen(onBack = onBack)
+                SettingRoute(onBack = onBack)
             }
         }
     )

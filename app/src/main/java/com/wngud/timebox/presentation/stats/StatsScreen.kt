@@ -1,17 +1,7 @@
 package com.wngud.timebox.presentation.stats
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,19 +12,7 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,18 +24,29 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wngud.timebox.ui.theme.AccentAmber
-import com.wngud.timebox.ui.theme.AccentDeepPurple
-import com.wngud.timebox.ui.theme.AccentRed
-import com.wngud.timebox.ui.theme.StatsBlue
-import com.wngud.timebox.ui.theme.StatsBlueBg
-import com.wngud.timebox.ui.theme.StatsBlueLight
-import com.wngud.timebox.ui.theme.StatsPurpleBg
-import com.wngud.timebox.ui.theme.SuccessGreen
-import com.wngud.timebox.ui.theme.TextDark
-import com.wngud.timebox.ui.theme.TextSecondary
-import com.wngud.timebox.ui.theme.TextTertiary
+import com.wngud.timebox.ui.theme.*
 
+/**
+ * [Stateful] 통계 화면의 Route 컴포저블.
+ * 향후 ViewModel과의 의존성을 가지고 상태를 UI 전용 컴포저블에 전달합니다.
+ * 현재는 ViewModel이 없으므로 직접 StatsScreen을 호출합니다.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StatsRoute(
+    onBack: () -> Unit
+) {
+    // TODO: ViewModel 추가 시 여기서 상태를 수집하고 StatsScreen에 전달
+    // val viewModel: StatsViewModel = hiltViewModel()
+    // val uiState by viewModel.uiState.collectAsState()
+    
+    StatsScreen(onBack = onBack)
+}
+
+/**
+ * [Stateless] 통계 UI 렌더링을 담당하는 컴포저블.
+ * ViewModel 의존성 없이 상태(State)와 이벤트만 전달받아 프리뷰와 테스트가 용이합니다.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
@@ -80,8 +69,7 @@ fun StatsScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "뒤로가기",
-                            tint = MaterialTheme.colorScheme.onBackground
+                            contentDescription = "뒤로가기"
                         )
                     }
                 },
@@ -101,25 +89,18 @@ fun StatsScreen(
         ) {
             item { Spacer(modifier = Modifier.height(8.dp)) }
 
-            // AI 분석 인사이트 카드
-            item {
-                AIInsightCard()
-            }
+            item { AIInsightCard() }
 
-            // Big Three 달성 분석
             item {
                 Text(
                     text = "Big Three 달성 분석",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onBackground
-                    ),
-                    modifier = Modifier.padding(top = 8.dp)
+                        fontSize = 20.sp
+                    )
                 )
             }
 
-            // 제품 기획 문서 완성
             item {
                 BigThreeItem(
                     icon = "📄",
@@ -134,7 +115,6 @@ fun StatsScreen(
                 )
             }
 
-            // 운동 30분
             item {
                 BigThreeItem(
                     icon = "✈️",
@@ -149,10 +129,7 @@ fun StatsScreen(
                 )
             }
 
-            // AI의 내일 제안
-            item {
-                AIDailyRecommendation()
-            }
+            item { AIDailyRecommendation() }
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
         }
@@ -164,130 +141,31 @@ fun AIInsightCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = StatsBlueBg
-        ),
+        colors = CardDefaults.cardColors(containerColor = StatsBlueBg),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Face,
-                    contentDescription = null,
-                    tint = StatsBlue,
-                    modifier = Modifier.size(24.dp)
-                )
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = Icons.Default.Face, contentDescription = null, tint = StatsBlue, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "AI가 분석한 오늘의 인사이트",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = StatsBlue
-                    )
-                )
+                Text(text = "AI가 분석한 오늘의 인사이트", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = StatsBlue))
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
             Text(
                 text = buildAnnotatedString {
                     append("오늘 아침 9-11시 집중도는 ")
-                    withStyle(
-                        style = SpanStyle(
-                            color = StatsBlue,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("90%")
-                    }
-                    append("로 매우 높았어요! 하지만 오후 3-4시에는 집중력이 60%로 떨어졌네요. 이 시간대에 휴식이나 가벼운 활동을 추천해요.")
+                    withStyle(style = SpanStyle(color = StatsBlue, fontWeight = FontWeight.Bold)) { append("90%") }
+                    append("로 매우 높았어요! 하지만 오후 3-4시에는 집중력이 60%로 떨어졌네요.")
                 },
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    color = TextDark
-                )
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp, color = TextDark)
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            // AI 추천 피크 시간
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "AI 추천 피크 시간",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = StatsBlue
-                    )
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = AccentAmber,
-                        modifier = Modifier.size(16.dp)
-                    )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "AI 추천 피크 시간", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = StatsBlue))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(imageVector = Icons.Default.Star, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "09:00~11:00",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            color = AccentAmber
-                        )
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 시간대별 그래프 (간단한 바 형태)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                val hours = listOf("08", "09", "10", "11", "12", "13", "14", "15", "16")
-                val heights = listOf(0.4f, 0.9f, 0.9f, 0.85f, 0.5f, 0.45f, 0.3f, 0.35f, 0.4f)
-                val highlights = listOf(false, true, true, true, false, false, false, false, false)
-
-                hours.forEachIndexed { index, hour ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .width(8.dp)
-                                .height(60.dp * heights[index])
-                                .background(
-                                    color = if (highlights[index]) StatsBlue else StatsBlueLight,
-                                    shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
-                                )
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = hour,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontSize = 10.sp,
-                                color = if (highlights[index]) StatsBlue else TextTertiary,
-                                fontWeight = if (highlights[index]) FontWeight.Bold else FontWeight.Normal
-                            )
-                        )
-                    }
+                    Text(text = "09:00~11:00", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AccentAmber))
                 }
             }
         }
@@ -295,110 +173,33 @@ fun AIInsightCard() {
 }
 
 @Composable
-fun BigThreeItem(
-    icon: String,
-    title: String,
-    badge: String,
-    badgeColor: Color,
-    targetTime: String,
-    actualTime: String,
-    efficiency: String,
-    isPositive: Boolean,
-    comment: String
-) {
+fun BigThreeItem(icon: String, title: String, badge: String, badgeColor: Color, targetTime: String, actualTime: String, efficiency: String, isPositive: Boolean, comment: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = icon,
-                        fontSize = 24.sp
-                    )
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = icon, fontSize = 24.sp)
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
+                    Text(text = title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp))
                 }
-
-                Surface(
-                    color = badgeColor.copy(alpha = 0.15f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = badge,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = badgeColor
-                        )
-                    )
+                Surface(color = badgeColor.copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
+                    Text(text = badge, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = badgeColor))
                 }
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "$targetTime → $actualTime",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontSize = 14.sp,
-                        color = TextSecondary
-                    )
-                )
-            }
-
+            Text(text = "$targetTime → $actualTime", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, color = TextSecondary))
             Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = if (isPositive) Icons.Default.ThumbUp else Icons.Default.Close,
-                    contentDescription = null,
-                    tint = if (isPositive) SuccessGreen else AccentRed,
-                    modifier = Modifier.size(16.dp)
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = if (isPositive) Icons.Default.ThumbUp else Icons.Default.Close, contentDescription = null, tint = if (isPositive) SuccessGreen else AccentRed, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "효율 $efficiency ${if (isPositive) "상승" else "하락"}",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isPositive) SuccessGreen else AccentRed
-                    )
-                )
+                Text(text = "효율 $efficiency", style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = if (isPositive) SuccessGreen else AccentRed))
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = comment,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 13.sp,
-                        color = TextSecondary
-                    )
-                )
+                Text(text = comment, style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, color = TextSecondary))
             }
         }
     }
@@ -409,86 +210,94 @@ fun AIDailyRecommendation() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = StatsPurpleBg
-        ),
+        colors = CardDefaults.cardColors(containerColor = StatsPurpleBg),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = null,
-                    tint = AccentDeepPurple,
-                    modifier = Modifier.size(24.dp)
-                )
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = Icons.Default.Favorite, contentDescription = null, tint = AccentDeepPurple, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "AI의 내일 제안",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = AccentDeepPurple
-                    )
-                )
+                Text(text = "AI의 내일 제안", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AccentDeepPurple))
             }
-
             Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = buildAnnotatedString {
-                    append("내일 운동 블록을 ")
-                    withStyle(
-                        style = SpanStyle(
-                            color = AccentDeepPurple,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ) {
-                        append("08:30")
-                    }
-                    append(" 으로 옮기면 아침 집중 피크와 맞춰 더 잘 달성 수 있어요!")
-                },
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    color = TextDark
-                )
-            )
-
+            Text(text = "내일 운동 블록을 08:30으로 옮기면 더 효율적이에요!", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp, color = TextDark))
             Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = AccentDeepPurple
-                ),
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.height(44.dp)
-            ) {
-                Text(
-                    text = "바로 적용하기",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
+            Button(onClick = { }, colors = ButtonDefaults.buttonColors(containerColor = AccentDeepPurple), shape = RoundedCornerShape(10.dp), modifier = Modifier.height(44.dp)) {
+                Text(text = "바로 적용하기", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+
+// ============ Previews ============
+
+@Preview(name = "Stats Screen - Light", showBackground = true)
 @Composable
 fun StatsScreenPreview() {
-    MaterialTheme {
+    TimeBoxTheme(darkTheme = false) {
         StatsScreen(onBack = {})
+    }
+}
+
+@Preview(name = "Stats Screen - Dark", showBackground = true)
+@Composable
+fun StatsScreenDarkPreview() {
+    TimeBoxTheme(darkTheme = true) {
+        StatsScreen(onBack = {})
+    }
+}
+
+@Preview(name = "AI Insight Card", showBackground = true)
+@Composable
+fun AIInsightCardPreview() {
+    TimeBoxTheme(darkTheme = true) {
+        AIInsightCard()
+    }
+}
+
+@Preview(name = "Big Three Item - Success", showBackground = true)
+@Composable
+fun BigThreeItemSuccessPreview() {
+    TimeBoxTheme(darkTheme = true) {
+        BigThreeItem(
+            icon = "📄",
+            title = "제품 기획 문서 완성",
+            badge = "완벽해요!",
+            badgeColor = Color(0xFF4CAF50),
+            targetTime = "목표 60분",
+            actualTime = "실제 55분",
+            efficiency = "+8%",
+            isPositive = true,
+            comment = "집중력이 최고조였어요 👍"
+        )
+    }
+}
+
+@Preview(name = "Big Three Item - Warning", showBackground = true)
+@Composable
+fun BigThreeItemWarningPreview() {
+    TimeBoxTheme(darkTheme = true) {
+        BigThreeItem(
+            icon = "✈️",
+            title = "운동 30분",
+            badge = "아쉽지만 괜찮아요!",
+            badgeColor = Color(0xFFFF9800),
+            targetTime = "목표 30분",
+            actualTime = "실제 25분",
+            efficiency = "-17%",
+            isPositive = false,
+            comment = "피로도가 조금 있었네요."
+        )
+    }
+}
+
+@Preview(name = "AI Daily Recommendation", showBackground = true)
+@Composable
+fun AIDailyRecommendationPreview() {
+    TimeBoxTheme(darkTheme = true) {
+        AIDailyRecommendation()
     }
 }

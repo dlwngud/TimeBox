@@ -50,25 +50,44 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.wngud.timebox.ui.theme.TimeBoxTheme
+import com.wngud.timebox.ui.theme.*
 import kotlinx.coroutines.launch
 
-// 색상 정의 (업로드된 디자인 기반)
-private val DarkBackground = Color(0xFF1A1F2E)
-private val DeepFocusIndigo = Color(0xFF4F46E5)
-private val ElectricCyan = Color(0xFF22D3EE)
-private val CardBackground = Color(0xFF252B3A)
-private val TextSecondary = Color(0xFF9CA3AF)
 
-
+/**
+ * [Stateful] 온보딩 화면의 Route 컴포저블.
+ * ViewModel과의 의존성을 가지고 상태를 UI 전용 컴포저블에 전달합니다.
+ */
 @Composable
-fun OnBoardingScreen(
+fun OnBoardingRoute(
     onComplete: () -> Unit,
     viewModel: OnBoardingViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    OnBoardingScreen(
+        uiState = uiState,
+        onIntent = { viewModel.processIntent(it) },
+        getPhase1Items = { viewModel.getPhase1Items() },
+        getCombinedItemsForPhase2 = { viewModel.getCombinedItemsForPhase2() },
+        onComplete = onComplete
+    )
+}
+
+/**
+ * [Stateless] 온보딩 UI 렌더링을 담당하는 컴포저블.
+ * ViewModel 의존성 없이 상태(State)와 이벤트(Intent)만 전달받아 프리뷰와 테스트가 용이합니다.
+ */
+@Composable
+fun OnBoardingScreen(
+    uiState: OnBoardingUiState,
+    onIntent: (OnBoardingIntent) -> Unit,
+    getPhase1Items: () -> List<OnBoardingItem>,
+    getCombinedItemsForPhase2: () -> List<OnBoardingItem>,
+    onComplete: () -> Unit
+) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
-    val uiState by viewModel.uiState.collectAsState()
 
     Box(
         modifier = Modifier
@@ -82,12 +101,12 @@ fun OnBoardingScreen(
         ) { page ->
             when (page) {
                 0 -> Phase1DumpScreen(
-                    userInputItems = viewModel.getPhase1Items(),
+                    userInputItems = getPhase1Items(),
                     sampleItems = uiState.sampleItems,
                     inputText = uiState.userInputText,
                     canProceed = uiState.canProceedToPhase2,
-                    onInputChange = { viewModel.processIntent(OnBoardingIntent.UpdateInputText(it)) },
-                    onAddItem = { viewModel.processIntent(OnBoardingIntent.AddUserItem) },
+                    onInputChange = { onIntent(OnBoardingIntent.UpdateInputText(it)) },
+                    onAddItem = { onIntent(OnBoardingIntent.AddUserItem) },
                     onNext = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(1)
@@ -95,9 +114,9 @@ fun OnBoardingScreen(
                     }
                 )
                 1 -> Phase2SelectScreen(
-                    items = viewModel.getCombinedItemsForPhase2(),
+                    items = getCombinedItemsForPhase2(),
                     selectedItemIds = uiState.selectedBigThree,
-                    onToggleSelection = { viewModel.processIntent(OnBoardingIntent.ToggleBigThree(it)) },
+                    onToggleSelection = { onIntent(OnBoardingIntent.ToggleBigThree(it)) },
                     onNext = {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(2)
@@ -110,7 +129,7 @@ fun OnBoardingScreen(
                     }
                 )
                 2 -> Phase3BoxScreen(
-                    selectedItems = viewModel.getCombinedItemsForPhase2()
+                    selectedItems = getCombinedItemsForPhase2()
                         .filter { uiState.selectedBigThree.contains(it.id) },
                     onComplete = onComplete,
                     onBack = {
@@ -163,7 +182,6 @@ fun Phase1DumpScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    // 사용자 입력 항목 + 예시 항목을 합쳐서 최신 항목이 위로 오도록 정렬
     val allItems = remember(userInputItems, sampleItems) {
         (userInputItems + sampleItems).sortedByDescending { it.id }
     }
@@ -174,14 +192,13 @@ fun Phase1DumpScreen(
     ) {
         Spacer(Modifier.height(40.dp))
 
-        // 헤더 - 다음 버튼만 표시
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.TopEnd
         ) {
             IconButton(
                 onClick = onNext,
-                enabled = canProceed, // 최소 1개 입력 시에만 활성화
+                enabled = canProceed,
                 modifier = Modifier
                     .size(48.dp)
                     .background(
@@ -201,14 +218,12 @@ fun Phase1DumpScreen(
 
         Spacer(Modifier.height(40.dp))
 
-        // 중앙 아이콘과 메시지
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(0.3f),
             contentAlignment = Alignment.Center
         ) {
-            // 글로우 효과
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -254,7 +269,6 @@ fun Phase1DumpScreen(
 
         Spacer(Modifier.height(32.dp))
 
-        // 덤프된 아이템 리스트
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -266,7 +280,6 @@ fun Phase1DumpScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        // 입력창
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -319,7 +332,6 @@ fun Phase1DumpScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        // 태그
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
@@ -391,7 +403,6 @@ fun Phase2SelectScreen(
     ) {
         Spacer(Modifier.height(40.dp))
 
-        // 뒤로가기 버튼
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.TopStart
@@ -415,7 +426,6 @@ fun Phase2SelectScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        // 타이틀
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -457,7 +467,6 @@ fun Phase2SelectScreen(
 
         Spacer(Modifier.height(32.dp))
 
-        // 선택 가능한 아이템 리스트
         LazyColumn(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -473,7 +482,6 @@ fun Phase2SelectScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        // 다음 버튼
         Button(
             onClick = onNext,
             modifier = Modifier
@@ -590,11 +598,9 @@ fun Phase3BoxScreen(
     onComplete: () -> Unit,
     onBack: () -> Unit
 ) {
-    // 드래그 중인 카드와 배치 상태 관리
     var draggingItemId by remember { mutableStateOf<Int?>(null) }
-    val placedItems = remember { mutableStateMapOf<Int, OnBoardingItem>() } // slotIndex to item
+    val placedItems = remember { mutableStateMapOf<Int, OnBoardingItem>() }
 
-    // 모든 아이템이 배치되었는지 확인
     val allPlaced = placedItems.size == selectedItems.size && selectedItems.isNotEmpty()
 
     Column(
@@ -604,7 +610,6 @@ fun Phase3BoxScreen(
     ) {
         Spacer(Modifier.height(40.dp))
 
-        // 헤더 - 뒤로가기 버튼만 표시
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.TopStart
@@ -628,7 +633,6 @@ fun Phase3BoxScreen(
 
         Spacer(Modifier.height(32.dp))
 
-        // 안내 메시지
         Column {
             Text(
                 text = "Big 3 업무를",
@@ -655,7 +659,6 @@ fun Phase3BoxScreen(
         Spacer(Modifier.height(24.dp))
 
         Row(modifier = Modifier.weight(1f)) {
-            // 왼쪽: TO DO 리스트
             Column(
                 modifier = Modifier
                     .weight(0.4f)
@@ -684,7 +687,6 @@ fun Phase3BoxScreen(
 
             Spacer(Modifier.width(16.dp))
 
-            // 오른쪽: 타임라인
             Column(
                 modifier = Modifier
                     .weight(0.6f)
@@ -705,7 +707,6 @@ fun Phase3BoxScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        // 완료 버튼
         Button(
             onClick = onComplete,
             modifier = Modifier
@@ -728,7 +729,6 @@ fun Phase3BoxScreen(
     }
 }
 
-// 드래그 가능한 TodoCard
 @Composable
 fun DraggableTodoCard(
     item: OnBoardingItem,
@@ -807,7 +807,6 @@ fun DraggableTodoCard(
         }
     }
 
-    // 드래그 종료 감지
     LaunchedEffect(isDragging) {
         if (!isDragging) {
             onDragEnd()
@@ -846,7 +845,6 @@ fun TimelineView(
 
 data class TimeSlot(val time: String, val label: String, val isAiRecommended: Boolean)
 
-// 드롭 타겟 TimeSlotCard
 @Composable
 fun DropTargetTimeSlotCard(
     slot: TimeSlot,
@@ -870,11 +868,6 @@ fun DropTargetTimeSlotCard(
         slot.isAiRecommended -> ElectricCyan
         else -> Color.Gray.copy(alpha = 0.3f)
     }
-
-    val scale by animateDpAsState(
-        targetValue = if (isPlaced) 2.dp else if (isHovered && isDragging) 4.dp else 0.dp,
-        animationSpec = tween(400)
-    )
 
     val dragAndDropTarget = remember {
         object : DragAndDropTarget {
@@ -912,9 +905,6 @@ fun DropTargetTimeSlotCard(
                 },
                 target = dragAndDropTarget
             )
-            .graphicsLayer {
-                shadowElevation = scale.toPx()
-            }
             .border(
                 width = if (isPlaced) 3.dp else if (slot.isAiRecommended) 2.dp else 1.dp,
                 color = borderColor,
@@ -934,7 +924,6 @@ fun DropTargetTimeSlotCard(
         Spacer(Modifier.width(8.dp))
 
         if (isPlaced && placedItem != null) {
-            // 배치된 아이템 표시
             Row(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
@@ -955,7 +944,6 @@ fun DropTargetTimeSlotCard(
                 )
             }
         } else {
-            // 빈 슬롯 표시
             Text(
                 text = slot.label,
                 color = if (slot.isAiRecommended) ElectricCyan else Color.White,
@@ -967,41 +955,23 @@ fun DropTargetTimeSlotCard(
 }
 
 // ============ Previews ============
-@Preview(showBackground = true)
+
+@Preview(name = "Phase 1: Brain Dump", showBackground = true)
 @Composable
 fun Phase1DumpScreenPreview() {
-    TimeBoxTheme {
+    TimeBoxTheme(darkTheme = true) {
         Phase1DumpScreen(
             userInputItems = listOf(
-                OnBoardingItem(
-                    id = 2,
-                    title = "프로젝트 기획서 작성",
-                    category = "업무",
-                    duration = "1시간",
-                    isAiRecommended = false,
-                    isChecked = false
-                ),
-                OnBoardingItem(
-                    id = 1,
-                    title = "운동하기",
-                    category = "건강",
-                    duration = "30분",
-                    isAiRecommended = false,
-                    isChecked = false
-                )
+                OnBoardingItem(1002, "프로젝트 기획서 작성", "사용자 입력", "방금 전", isUserInput = true, isAiRecommended = true),
+                OnBoardingItem(1001, "운동하기", "사용자 입력", "방금 전", isUserInput = true)
             ),
             sampleItems = listOf(
-                OnBoardingItem(
-                    id = 0,
-                    title = "이메일 확인",
-                    category = "업무",
-                    duration = "15분",
-                    isAiRecommended = false,
-                    isChecked = false
-                )
+                OnBoardingItem(1, "이번 주 주간 보고서 초안 작성하기", "업무", "1분 전", isAiRecommended = true),
+                OnBoardingItem(2, "세탁소 들러서 거울 코트 찾아오기", "개인", "3분 전"),
+                OnBoardingItem(3, "안부 전화 드리기", "가족", "15분 전")
             ),
             inputText = "",
-            canProceed = false,
+            canProceed = true,
             onInputChange = {},
             onAddItem = {},
             onNext = {}
@@ -1009,38 +979,19 @@ fun Phase1DumpScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0A0E27)
+@Preview(name = "Phase 2: Select Big Three", showBackground = true)
 @Composable
 fun Phase2SelectScreenPreview() {
-    TimeBoxTheme {
+    TimeBoxTheme(darkTheme = true) {
         Phase2SelectScreen(
             items = listOf(
-                OnBoardingItem(
-                    id = 2,
-                    title = "프로젝트 기획서 작성",
-                    category = "업무",
-                    duration = "1시간",
-                    isAiRecommended = true,
-                    isChecked = false
-                ),
-                OnBoardingItem(
-                    id = 1,
-                    title = "운동하기",
-                    category = "건강",
-                    duration = "30분",
-                    isAiRecommended = true,
-                    isChecked = false
-                ),
-                OnBoardingItem(
-                    id = 0,
-                    title = "이메일 확인",
-                    category = "업무",
-                    duration = "15분",
-                    isAiRecommended = false,
-                    isChecked = false
-                )
+                OnBoardingItem(1001, "프로젝트 기획서 작성", "사용자 입력", "방금 전", isAiRecommended = true),
+                OnBoardingItem(1, "이번 주 주간 보고서 초안 작성하기", "업무", "1분 전", isAiRecommended = true),
+                OnBoardingItem(2, "세탁소 들러서 거울 코트 찾아오기", "개인", "3분 전"),
+                OnBoardingItem(3, "안부 전화 드리기", "가족", "15분 전"),
+                OnBoardingItem(4, "어제 회의록 정리", "인프라", "1시간 전")
             ),
-            selectedItemIds = setOf(2, 1),
+            selectedItemIds = setOf(1001, 1),
             onToggleSelection = {},
             onNext = {},
             onBack = {}
@@ -1048,39 +999,51 @@ fun Phase2SelectScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0A0E27)
+@Preview(name = "Phase 3: Timeline Placement", showBackground = true)
 @Composable
 fun Phase3BoxScreenPreview() {
-    TimeBoxTheme {
+    TimeBoxTheme(darkTheme = true) {
         Phase3BoxScreen(
             selectedItems = listOf(
-                OnBoardingItem(
-                    id = 2,
-                    title = "프로젝트 기획서 작성",
-                    category = "업무",
-                    duration = "1시간",
-                    isAiRecommended = true,
-                    isChecked = false
-                ),
-                OnBoardingItem(
-                    id = 1,
-                    title = "운동하기",
-                    category = "건강",
-                    duration = "30분",
-                    isAiRecommended = true,
-                    isChecked = false
-                ),
-                OnBoardingItem(
-                    id = 0,
-                    title = "독서",
-                    category = "자기계발",
-                    duration = "45분",
-                    isAiRecommended = true,
-                    isChecked = false
-                )
+                OnBoardingItem(1001, "프로젝트 기획서 작성", "사용자 입력", "1시간", isAiRecommended = true),
+                OnBoardingItem(1, "이번 주 주간 보고서 초안", "업무", "1시간", isAiRecommended = true),
+                OnBoardingItem(2, "운동하기", "건강", "30분", isAiRecommended = true)
             ),
             onComplete = {},
             onBack = {}
+        )
+    }
+}
+
+@Preview(name = "Full Onboarding Flow", showBackground = true)
+@Composable
+fun OnBoardingScreenPreview() {
+    val previewUiState = OnBoardingUiState(
+        userInputText = "",
+        userInputItems = listOf(
+            OnBoardingItem(1001, "프로젝트 기획서 작성", "사용자 입력", "방금 전", isUserInput = true, isAiRecommended = true)
+        ),
+        sampleItems = listOf(
+            OnBoardingItem(1, "이번 주 주간 보고서 초안 작성하기", "업무", "1분 전", isAiRecommended = true),
+            OnBoardingItem(2, "세탁소 들러서 거울 코트 찾아오기", "개인", "3분 전"),
+            OnBoardingItem(3, "안부 전화 드리기", "가족", "15분 전")
+        ),
+        selectedBigThree = setOf(1001, 1),
+        canProceedToPhase2 = true
+    )
+    
+    TimeBoxTheme(darkTheme = true) {
+        OnBoardingScreen(
+            uiState = previewUiState,
+            onIntent = {},
+            getPhase1Items = { previewUiState.userInputItems },
+            getCombinedItemsForPhase2 = { 
+                val allItems = previewUiState.userInputItems + previewUiState.sampleItems
+                val aiRecommended = allItems.filter { it.isAiRecommended }
+                val others = allItems.filter { !it.isAiRecommended }
+                aiRecommended + others
+            },
+            onComplete = {}
         )
     }
 }
