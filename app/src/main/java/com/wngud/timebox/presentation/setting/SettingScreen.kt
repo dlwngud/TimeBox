@@ -84,10 +84,10 @@ fun SettingScreen(
             modifier = Modifier.padding(paddingValues).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingItemCard(icon = "🔔", iconColor = IconBlue, iconBgColor = IconBlueBg, title = "알림 받기", control = { Switch(checked = uiState.isNotificationEnabled, onCheckedChange = onNotificationToggle, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = SwitchBlue, uncheckedThumbColor = Color.White, uncheckedTrackColor = BorderGray, uncheckedBorderColor = Color.Transparent)) })
-            SettingItemCard(icon = "⏰", iconColor = Color(0xFF9C27B0), iconBgColor = Color(0xFFF3E5F5), title = "알림 시간", onClick = onTimeClick, control = { Row(verticalAlignment = Alignment.CenterVertically) { Text(text = uiState.notificationTime, color = SwitchBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp); Spacer(modifier = Modifier.width(4.dp)) } })
-            SettingItemCard(icon = "📳", iconColor = Color(0xFF4CAF50), iconBgColor = Color(0xFFE8F5E9), title = "진동", control = { Switch(checked = uiState.isVibrationEnabled, onCheckedChange = onVibrationToggle, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = SwitchBlue, uncheckedThumbColor = Color.White, uncheckedTrackColor = BorderGray, uncheckedBorderColor = Color.Transparent)) })
-            SettingItemCard(icon = if (uiState.themeMode == "라이트") "☀️" else "🌙", iconColor = Color(0xFFFF9800), iconBgColor = Color(0xFFFFF3E0), title = "테마", onClick = onThemeClick, control = { Text(text = uiState.themeMode, color = SwitchBlue, fontWeight = FontWeight.Bold, fontSize = 14.sp) })
+            SettingItemCard(icon = "🔔", iconColor = IconBlue, iconBgColor = IconBlueBg, title = "알림 받기", control = { Switch(checked = uiState.isNotificationEnabled, onCheckedChange = onNotificationToggle, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.onPrimary, checkedTrackColor = MaterialTheme.colorScheme.primary, uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, uncheckedBorderColor = Color.Transparent)) })
+            SettingItemCard(icon = "⏰", iconColor = Color(0xFF9C27B0), iconBgColor = Color(0xFFF3E5F5), title = "알림 시간", onClick = onTimeClick, control = { Row(verticalAlignment = Alignment.CenterVertically) { Text(text = uiState.notificationTime, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 14.sp); Spacer(modifier = Modifier.width(4.dp)) } })
+            SettingItemCard(icon = "📳", iconColor = Color(0xFF4CAF50), iconBgColor = Color(0xFFE8F5E9), title = "진동", control = { Switch(checked = uiState.isVibrationEnabled, onCheckedChange = onVibrationToggle, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.onPrimary, checkedTrackColor = MaterialTheme.colorScheme.primary, uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, uncheckedBorderColor = Color.Transparent)) })
+            SettingItemCard(icon = if (uiState.themeMode == "라이트") "☀️" else "🌙", iconColor = Color(0xFFFF9800), iconBgColor = Color(0xFFFFF3E0), title = "테마", onClick = onThemeClick, control = { Text(text = uiState.themeMode, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 14.sp) })
             SettingItemCard(icon = "📅", iconColor = Color(0xFF9E9E9E), iconBgColor = Color(0xFFEEEEEE), title = "캘린더 연동", subTitle = "곧 오픈돼요", enabled = false, control = { Switch(checked = false, onCheckedChange = null, enabled = false, colors = SwitchDefaults.colors(disabledCheckedTrackColor = Color(0xFFE0E0E0), disabledUncheckedTrackColor = Color(0xFFEEEEEE), disabledUncheckedThumbColor = Color.White)) })
             SettingItemCard(icon = "ℹ️", iconColor = Color(0xFF616161), iconBgColor = Color(0xFFECEFF1), title = "앱 버전", control = { Text(text = uiState.appVersion, color = Color.Gray, fontSize = 14.sp) })
         }
@@ -136,7 +136,7 @@ fun ThemeSelectionDialog(currentTheme: String, onDismiss: () -> Unit, onThemeSel
                 ThemeOptionItem(icon = "🌙", title = "다크", description = "어두운 테마", isSelected = selectedTheme == "다크", onClick = { selectedTheme = "다크" })
             }
         },
-        confirmButton = { Button(onClick = { onThemeSelected(selectedTheme) }, colors = ButtonDefaults.buttonColors(containerColor = SwitchBlue), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(text = "확인", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp), color = Color.White) } }
+        confirmButton = { Button(onClick = { onThemeSelected(selectedTheme) }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(text = "확인", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp), color = MaterialTheme.colorScheme.onPrimary) } }
     )
 }
 
@@ -145,18 +145,18 @@ fun ThemeOptionItem(icon: String, title: String, description: String? = null, is
     Card(
         modifier = Modifier.fillMaxWidth().height(if (description != null) 72.dp else 64.dp).clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = if (isSelected) IconBlueBg else MaterialTheme.colorScheme.background),
-        border = if (isSelected) BorderStroke(2.dp, SwitchBlue) else null
+        colors = CardDefaults.cardColors(containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.background),
+        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Row(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp).clip(CircleShape).background(if (isSelected) SwitchBlue.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface)) { Text(text = icon, fontSize = 20.sp) }
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp).clip(CircleShape).background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface)) { Text(text = icon, fontSize = 20.sp) }
                 Column {
-                    Text(text = title, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) SwitchBlue else MaterialTheme.colorScheme.onSurface))
-                    if (description != null) Text(text = description, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, color = SubtitleGray))
+                    Text(text = title, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal, color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface))
+                    if (description != null) Text(text = description, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
             }
-            if (isSelected) Box(contentAlignment = Alignment.Center, modifier = Modifier.size(24.dp).clip(CircleShape).background(SwitchBlue)) { Text(text = "✓", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold) }
+            if (isSelected) Box(contentAlignment = Alignment.Center, modifier = Modifier.size(24.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary)) { Text(text = "✓", color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold) }
         }
     }
 }

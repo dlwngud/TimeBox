@@ -163,7 +163,7 @@ fun HomeScreen(
                 FloatingActionButton(
                     onClick = onNavigateToBrainDump,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape
                 ) {
                     Icon(
@@ -350,10 +350,10 @@ fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) {
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
             Box(
-                modifier = Modifier.size(24.dp).clip(RoundedCornerShape(6.dp)).background(if (task.isCompleted) SwitchBlue else if (isDarkTheme) Color(0xFF424242) else BorderGray).clickable { onToggleComplete(task, !task.isCompleted) },
+                modifier = Modifier.size(24.dp).clip(RoundedCornerShape(6.dp)).background(if (task.isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant).clickable { onToggleComplete(task, !task.isCompleted) },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = if (task.isCompleted) Color.White else (if (isDarkTheme) Color.White.copy(alpha = 0.3f) else Color.Gray.copy(alpha = 0.4f)), modifier = Modifier.size(18.dp))
+                Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = if (task.isCompleted) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(18.dp))
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(text = task.title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
@@ -434,7 +434,7 @@ fun CurrentTimeIndicator(currentTime: LocalTime, timelineHeight: Int) {
     val indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
     Row(modifier = Modifier.offset(y = with(LocalDensity.current) { yPosition.toDp() }).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Box(modifier = Modifier.width(90.dp).background(color = indicatorColor, shape = RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 4.dp), contentAlignment = Alignment.Center) {
-            Text(text = String.format("%d:%02d", currentTime.hour, currentTime.minute), style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold), color = Color.White)
+            Text(text = String.format("%d:%02d", currentTime.hour, currentTime.minute), style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimary)
         }
         Spacer(modifier = Modifier.width(12.dp)); Box(modifier = Modifier.weight(1f).height(2.dp).background(indicatorColor))
     }

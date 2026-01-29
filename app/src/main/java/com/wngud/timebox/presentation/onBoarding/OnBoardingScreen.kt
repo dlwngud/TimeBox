@@ -92,7 +92,7 @@ fun OnBoardingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         HorizontalPager(
             state = pagerState,
@@ -159,8 +159,8 @@ fun OnBoardingScreen(
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(
-                            if (index == pagerState.currentPage) DeepFocusIndigo
-                            else Color.Gray.copy(alpha = 0.3f)
+                            if (index == pagerState.currentPage) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                 )
             }
@@ -202,15 +202,15 @@ fun Phase1DumpScreen(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        if (canProceed) DeepFocusIndigo.copy(alpha = 0.3f)
-                        else Color.Gray.copy(alpha = 0.2f),
+                        if (canProceed) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                         CircleShape
                     )
             ) {
                 Icon(
                     Icons.Default.ArrowForward,
                     contentDescription = "다음",
-                    tint = if (canProceed) Color.White else Color.Gray,
+                    tint = if (canProceed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -230,7 +230,7 @@ fun Phase1DumpScreen(
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                ElectricCyan.copy(alpha = 0.3f),
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f),
                                 Color.Transparent
                             )
                         ),
@@ -242,7 +242,7 @@ fun Phase1DumpScreen(
                 imageVector = Icons.Default.Face,
                 contentDescription = null,
                 modifier = Modifier.size(48.dp),
-                tint = ElectricCyan
+                tint = MaterialTheme.colorScheme.secondary
             )
         }
 
@@ -252,7 +252,7 @@ fun Phase1DumpScreen(
         ) {
             Text(
                 text = "지금 머릿속에 있는 생각을\n모두 쏟아보세요",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -261,7 +261,7 @@ fun Phase1DumpScreen(
             Spacer(Modifier.height(12.dp))
             Text(
                 text = "판단하지 말고, 그저 기록하세요.",
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center
             )
@@ -283,7 +283,7 @@ fun Phase1DumpScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(CardBackground, RoundedCornerShape(24.dp))
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -292,15 +292,15 @@ fun Phase1DumpScreen(
                 onValueChange = onInputChange,
                 modifier = Modifier.weight(1f),
                 textStyle = LocalTextStyle.current.copy(
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp
                 ),
-                cursorBrush = SolidColor(ElectricCyan),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.secondary),
                 decorationBox = { innerTextField ->
                     if (inputText.isEmpty()) {
                         Text(
                             text = "할 일, 걱정, 아이디어...",
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     }
@@ -317,14 +317,14 @@ fun Phase1DumpScreen(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        if (inputText.isNotBlank()) DeepFocusIndigo else Color.Gray.copy(alpha = 0.3f),
+                        if (inputText.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                         CircleShape
                     )
             ) {
                 Icon(
                     Icons.Default.ArrowForward,
                     contentDescription = "추가",
-                    tint = if (inputText.isNotBlank()) Color.White else Color.Gray,
+                    tint = if (inputText.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -340,7 +340,7 @@ fun Phase1DumpScreen(
             listOf("#Work", "#Personal", "#Ideas").forEach { tag ->
                 Text(
                     text = tag,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
@@ -356,30 +356,30 @@ fun DumpItemCard(item: OnBoardingItem) {
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = ElectricCyan.copy(alpha = 0.3f),
+                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(16.dp)
             )
-            .background(CardBackground.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
-            tint = if (item.isChecked) ElectricCyan else Color.Gray,
+            tint = if (item.isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(24.dp)
         )
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = item.title,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 14.sp
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = "${item.category} • ${item.duration}",
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp
             )
         }
@@ -411,12 +411,12 @@ fun Phase2SelectScreen(
                 onClick = onBack,
                 modifier = Modifier
                     .size(48.dp)
-                    .background(CardBackground, CircleShape)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
             ) {
                 Icon(
                     Icons.Default.ArrowForward,
                     contentDescription = "뒤로",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .size(24.dp)
                         .graphicsLayer(rotationZ = 180f)
@@ -437,13 +437,13 @@ fun Phase2SelectScreen(
                 Icon(
                     imageVector = Icons.Default.Face,
                     contentDescription = null,
-                    tint = DeepFocusIndigo,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = "TIMEBOX",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp,
                     letterSpacing = 2.sp
                 )
@@ -453,14 +453,14 @@ fun Phase2SelectScreen(
 
             Text(
                 text = "오늘의 선택",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(8.dp))
             Text(
                 text = "Big Three를 선택하세요 (${selectedItemIds.size}/3)",
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp
             )
         }
@@ -488,8 +488,8 @@ fun Phase2SelectScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = DeepFocusIndigo
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             shape = RoundedCornerShape(16.dp),
             enabled = selectedItemIds.size == 3
@@ -512,15 +512,15 @@ fun SelectableItemCard(
     onToggle: () -> Unit
 ) {
     val backgroundColor = when {
-        isSelected -> DeepFocusIndigo
-        item.isAiRecommended -> ElectricCyan.copy(alpha = 0.1f)
-        else -> CardBackground
+        isSelected -> MaterialTheme.colorScheme.primary
+        item.isAiRecommended -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
+        else -> MaterialTheme.colorScheme.surface
     }
 
     val borderColor = when {
-        isSelected -> DeepFocusIndigo
-        item.isAiRecommended -> ElectricCyan
-        else -> Color.Gray.copy(alpha = 0.3f)
+        isSelected -> MaterialTheme.colorScheme.primary
+        item.isAiRecommended -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
     }
 
     Row(
@@ -538,13 +538,13 @@ fun SelectableItemCard(
                     Icon(
                         Icons.Default.Face,
                         contentDescription = null,
-                        tint = ElectricCyan,
+                        tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
                         text = "AI 추천",
-                        color = ElectricCyan,
+                        color = MaterialTheme.colorScheme.secondary,
                         fontSize = 11.sp
                     )
                 }
@@ -553,14 +553,14 @@ fun SelectableItemCard(
 
             Text(
                 text = item.title,
-                color = Color.White,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                 fontSize = 15.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = "${item.duration} • ${item.category}",
-                color = if (isSelected) Color.White.copy(alpha = 0.7f) else TextSecondary,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp
             )
         }
@@ -570,11 +570,11 @@ fun SelectableItemCard(
                 .size(28.dp)
                 .border(
                     2.dp,
-                    if (isSelected) Color.White else Color.Gray,
+                    if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                     CircleShape
                 )
                 .background(
-                    if (isSelected) Color.White else Color.Transparent,
+                    if (isSelected) MaterialTheme.colorScheme.onPrimary else Color.Transparent,
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -583,8 +583,8 @@ fun SelectableItemCard(
                 Icon(
                     Icons.Default.Check,
                     contentDescription = null,
-                    tint = DeepFocusIndigo,
-                    modifier = Modifier.size(16.dp)
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -618,12 +618,12 @@ fun Phase3BoxScreen(
                 onClick = onBack,
                 modifier = Modifier
                     .size(48.dp)
-                    .background(CardBackground, CircleShape)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowForward,
                     contentDescription = "뒤로",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
                         .size(24.dp)
                         .graphicsLayer(rotationZ = 180f)
@@ -636,20 +636,20 @@ fun Phase3BoxScreen(
         Column {
             Text(
                 text = "Big 3 업무를",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "AI 추천 슬롯",
-                    color = DeepFocusIndigo,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "에 놓아보세요.",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -667,7 +667,7 @@ fun Phase3BoxScreen(
             ) {
                 Text(
                     text = "TO DO",
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     letterSpacing = 1.sp
                 )
@@ -713,7 +713,7 @@ fun Phase3BoxScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = DeepFocusIndigo
+                containerColor = MaterialTheme.colorScheme.primary
             ),
             shape = RoundedCornerShape(16.dp),
             enabled = allPlaced
@@ -770,8 +770,8 @@ fun DraggableTodoCard(
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        CardBackground,
-                        CardBackground.copy(alpha = 0.8f)
+                        MaterialTheme.colorScheme.surface,
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
                     )
                 ),
                 shape = RoundedCornerShape(20.dp)
@@ -786,13 +786,13 @@ fun DraggableTodoCard(
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = null,
-                tint = DeepFocusIndigo,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(Modifier.height(12.dp))
             Text(
                 text = if (item.title.length > 15) item.title.take(15) + "..." else item.title,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
@@ -801,7 +801,7 @@ fun DraggableTodoCard(
             Spacer(Modifier.height(4.dp))
             Text(
                 text = item.duration,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.sp
             )
         }
@@ -856,17 +856,17 @@ fun DropTargetTimeSlotCard(
     var isHovered by remember { mutableStateOf(false) }
 
     val backgroundColor = when {
-        isPlaced -> DeepFocusIndigo.copy(alpha = 0.6f)
-        isHovered && isDragging && slot.isAiRecommended -> ElectricCyan.copy(alpha = 0.4f)
-        slot.isAiRecommended -> ElectricCyan.copy(alpha = 0.2f)
-        else -> CardBackground.copy(alpha = 0.5f)
+        isPlaced -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+        isHovered && isDragging && slot.isAiRecommended -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+        slot.isAiRecommended -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+        else -> MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
     }
 
     val borderColor = when {
-        isPlaced -> DeepFocusIndigo
-        isHovered && isDragging && slot.isAiRecommended -> ElectricCyan
-        slot.isAiRecommended -> ElectricCyan
-        else -> Color.Gray.copy(alpha = 0.3f)
+        isPlaced -> MaterialTheme.colorScheme.primary
+        isHovered && isDragging && slot.isAiRecommended -> MaterialTheme.colorScheme.secondary
+        slot.isAiRecommended -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
     }
 
     val dragAndDropTarget = remember {
@@ -916,7 +916,7 @@ fun DropTargetTimeSlotCard(
     ) {
         Text(
             text = slot.time,
-            color = if (isPlaced) Color.White else TextSecondary,
+            color = if (isPlaced) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             fontSize = 12.sp,
             fontWeight = if (isPlaced) FontWeight.Bold else FontWeight.Normal,
             modifier = Modifier.width(50.dp)
@@ -931,13 +931,13 @@ fun DropTargetTimeSlotCard(
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = placedItem.title,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1
@@ -946,7 +946,7 @@ fun DropTargetTimeSlotCard(
         } else {
             Text(
                 text = slot.label,
-                color = if (slot.isAiRecommended) ElectricCyan else Color.White,
+                color = if (slot.isAiRecommended) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 fontSize = 13.sp,
                 fontWeight = if (slot.isAiRecommended) FontWeight.Bold else FontWeight.Normal
             )

@@ -165,15 +165,15 @@ fun BrainDumpItemCard(item: BrainDumpItem, onDeleteClick: (Long) -> Unit, onItem
         Row(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                 IconButton(onClick = { onToggleBigThree(item.id) }, modifier = Modifier.size(24.dp)) {
-                    Icon(imageVector = Icons.Filled.Star, contentDescription = null, tint = if (item.isBigThree) Color(0xFFFFC107) else DisabledGray)
+                    Icon(imageVector = Icons.Filled.Star, contentDescription = null, tint = if (item.isBigThree) Color(0xFFFFC107) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(text = item.content, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface))
-                    if (item.formattedTimestamp.isNotBlank()) Text(text = item.formattedTimestamp, style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, color = DisabledGray))
+                    if (item.formattedTimestamp.isNotBlank()) Text(text = item.formattedTimestamp, style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
                 }
             }
-            IconButton(onClick = { onDeleteClick(item.id) }) { Icon(imageVector = Icons.Default.Delete, contentDescription = null, tint = DisabledGray) }
+            IconButton(onClick = { onDeleteClick(item.id) }) { Icon(imageVector = Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }
         }
     }
 }
@@ -184,11 +184,11 @@ fun BrainDumpInputArea(text: String, onValueChange: (String) -> Unit, onSendClic
         Surface(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.surface, shadowElevation = 2.dp) {
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.weight(1f)) {
-                    if (text.isEmpty()) Text(text = "여기에 입력하세요...", style = TextStyle(color = SubtitleGray, fontSize = 15.sp))
-                    BasicTextField(value = text, onValueChange = onValueChange, textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp), singleLine = true, cursorBrush = SolidColor(SwitchBlue), modifier = Modifier.fillMaxWidth())
+                    if (text.isEmpty()) Text(text = "여기에 입력하세요...", style = TextStyle(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 15.sp))
+                    BasicTextField(value = text, onValueChange = onValueChange, textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface, fontSize = 15.sp), singleLine = true, cursorBrush = SolidColor(MaterialTheme.colorScheme.primary), modifier = Modifier.fillMaxWidth())
                 }
-                IconButton(onClick = onSendClick, modifier = Modifier.size(40.dp).clip(CircleShape).background(Color(0xFF186EF2))) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "전송", tint = Color.White, modifier = Modifier.size(18.dp).offset(x = (-1).dp))
+                IconButton(onClick = onSendClick, modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary)) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "전송", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp).offset(x = (-1).dp))
                 }
             }
         }
