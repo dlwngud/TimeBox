@@ -1,5 +1,6 @@
 package com.wngud.timebox.presentation.onBoarding
 
+import androidx.activity.compose.BackHandler
 import android.content.ClipData
 import android.content.ClipDescription
 import androidx.compose.animation.core.animateDpAsState
@@ -87,7 +88,18 @@ fun OnBoardingScreen(
     onComplete: () -> Unit
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
-    val coroutineScope = rememberCoroutineScope()
+
+    // ViewModel의 currentPage 변경을 감지하여 pagerState 동기화
+    LaunchedEffect(uiState.currentPage) {
+        if (pagerState.currentPage != uiState.currentPage) {
+            pagerState.animateScrollToPage(uiState.currentPage)
+        }
+    }
+
+    // 시스템 뒤로가기 처리 - ViewModel에 Intent 발행
+    BackHandler(enabled = uiState.currentPage > 0) {
+        onIntent(OnBoardingIntent.NavigateToPreviousPage)
+    }
 
     Box(
         modifier = Modifier
@@ -107,36 +119,20 @@ fun OnBoardingScreen(
                     canProceed = uiState.canProceedToPhase2,
                     onInputChange = { onIntent(OnBoardingIntent.UpdateInputText(it)) },
                     onAddItem = { onIntent(OnBoardingIntent.AddUserItem) },
-                    onNext = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(1)
-                        }
-                    }
+                    onNext = { onIntent(OnBoardingIntent.NavigateToNextPage) }
                 )
                 1 -> Phase2SelectScreen(
                     items = getCombinedItemsForPhase2(),
                     selectedItemIds = uiState.selectedBigThree,
                     onToggleSelection = { onIntent(OnBoardingIntent.ToggleBigThree(it)) },
-                    onNext = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(2)
-                        }
-                    },
-                    onBack = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(0)
-                        }
-                    }
+                    onNext = { onIntent(OnBoardingIntent.NavigateToNextPage) },
+                    onBack = { onIntent(OnBoardingIntent.NavigateToPreviousPage) }
                 )
                 2 -> Phase3BoxScreen(
                     selectedItems = getCombinedItemsForPhase2()
                         .filter { uiState.selectedBigThree.contains(it.id) },
                     onComplete = onComplete,
-                    onBack = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(1)
-                        }
-                    }
+                    onBack = { onIntent(OnBoardingIntent.NavigateToPreviousPage) }
                 )
             }
         }

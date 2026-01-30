@@ -34,7 +34,8 @@ data class OnBoardingUiState(
         OnBoardingItem(4, "어제 회의록 정리", "인프라", "1시간 전", false, false)
     ),
     val selectedBigThree: Set<Int> = emptySet(), // Big Three로 선택된 항목 ID
-    val canProceedToPhase2: Boolean = false // Phase 2로 진행 가능 여부
+    val canProceedToPhase2: Boolean = false, // Phase 2로 진행 가능 여부
+    val currentPage: Int = 0 // 현재 온보딩 페이지 (0: Phase1, 1: Phase2, 2: Phase3)
 )
 
 // ------------------------------------------------------------------------
@@ -44,6 +45,8 @@ sealed class OnBoardingIntent {
     data class UpdateInputText(val text: String) : OnBoardingIntent()
     data object AddUserItem : OnBoardingIntent()
     data class ToggleBigThree(val itemId: Int) : OnBoardingIntent()
+    data object NavigateToNextPage : OnBoardingIntent()
+    data object NavigateToPreviousPage : OnBoardingIntent()
     data object ResetOnBoarding : OnBoardingIntent()
 }
 
@@ -118,6 +121,20 @@ class OnBoardingViewModel @Inject constructor() : ViewModel() {
                         }
                     }
                     currentState.copy(selectedBigThree = newSelected)
+                }
+            }
+
+            OnBoardingIntent.NavigateToNextPage -> {
+                _uiState.update { currentState ->
+                    val nextPage = (currentState.currentPage + 1).coerceIn(0, 2)
+                    currentState.copy(currentPage = nextPage)
+                }
+            }
+
+            OnBoardingIntent.NavigateToPreviousPage -> {
+                _uiState.update { currentState ->
+                    val previousPage = (currentState.currentPage - 1).coerceIn(0, 2)
+                    currentState.copy(currentPage = previousPage)
                 }
             }
 
