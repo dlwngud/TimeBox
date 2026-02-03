@@ -25,7 +25,7 @@ data class OnBoardingItem(
 // UI 상태 정의
 // ------------------------------------------------------------------------
 data class OnBoardingUiState(
-    val userInputText: String = "",
+    val inputText: String = "",
     val userInputItems: List<OnBoardingItem> = emptyList(), // 사용자가 입력한 항목들
     val sampleItems: List<OnBoardingItem> = listOf(
         OnBoardingItem(1, "이번 주 주간 보고서 초안 작성하기", "업무", "1분 전", false, false),
@@ -33,7 +33,7 @@ data class OnBoardingUiState(
         OnBoardingItem(3, "안부 전화 드리기", "가족", "15분 전", false, false),
         OnBoardingItem(4, "어제 회의록 정리", "인프라", "1시간 전", false, false)
     ),
-    val selectedBigThree: Set<Int> = emptySet(), // Big Three로 선택된 항목 ID
+    val selectedItemIds: Set<Int> = emptySet(), // Big Three로 선택된 항목 ID
     val canProceedToPhase2: Boolean = false, // Phase 2로 진행 가능 여부
     val currentPage: Int = 0 // 현재 온보딩 페이지 (0: Phase1, 1: Phase2, 2: Phase3)
 )
@@ -43,11 +43,11 @@ data class OnBoardingUiState(
 // ------------------------------------------------------------------------
 sealed class OnBoardingIntent {
     data class UpdateInputText(val text: String) : OnBoardingIntent()
-    data object AddUserItem : OnBoardingIntent()
-    data class ToggleBigThree(val itemId: Int) : OnBoardingIntent()
-    data object NavigateToNextPage : OnBoardingIntent()
-    data object NavigateToPreviousPage : OnBoardingIntent()
-    data object ResetOnBoarding : OnBoardingIntent()
+    data object AddItem : OnBoardingIntent()
+    data class ToggleSelection(val itemId: Int) : OnBoardingIntent()
+    data object GoNext : OnBoardingIntent()
+    data object GoBack : OnBoardingIntent()
+    data object Complete : OnBoardingIntent()
 }
 
 @HiltViewModel
@@ -76,11 +76,11 @@ class OnBoardingViewModel @Inject constructor() : ViewModel() {
     fun processIntent(intent: OnBoardingIntent) {
         when (intent) {
             is OnBoardingIntent.UpdateInputText -> {
-                _uiState.update { it.copy(userInputText = intent.text) }
+                _uiState.update { it.copy(inputText = intent.text) }
             }
 
-            OnBoardingIntent.AddUserItem -> {
-                val currentText = _uiState.value.userInputText.trim()
+            OnBoardingIntent.AddItem -> {
+                val currentText = _uiState.value.inputText.trim()
                 if (currentText.isNotBlank()) {
                     val newItem = OnBoardingItem(
                         id = nextUserId++,
@@ -101,16 +101,16 @@ class OnBoardingViewModel @Inject constructor() : ViewModel() {
                         
                         currentState.copy(
                             userInputItems = updatedUserItemsWithAi,
-                            userInputText = "",
+                            inputText = "",
                             canProceedToPhase2 = updatedUserItems.isNotEmpty() // 최소 1개 입력 시 진행 가능
                         )
                     }
                 }
             }
 
-            is OnBoardingIntent.ToggleBigThree -> {
+            is OnBoardingIntent.ToggleSelection -> {
                 _uiState.update { currentState ->
-                    val currentSelected = currentState.selectedBigThree
+                    val currentSelected = currentState.selectedItemIds
                     val newSelected = if (currentSelected.contains(intent.itemId)) {
                         currentSelected - intent.itemId
                     } else {
@@ -120,28 +120,27 @@ class OnBoardingViewModel @Inject constructor() : ViewModel() {
                             currentSelected // 이미 3개 선택됨
                         }
                     }
-                    currentState.copy(selectedBigThree = newSelected)
+                    currentState.copy(selectedItemIds = newSelected)
                 }
             }
 
-            OnBoardingIntent.NavigateToNextPage -> {
+            OnBoardingIntent.GoNext -> {
                 _uiState.update { currentState ->
                     val nextPage = (currentState.currentPage + 1).coerceIn(0, 2)
                     currentState.copy(currentPage = nextPage)
                 }
             }
 
-            OnBoardingIntent.NavigateToPreviousPage -> {
+            OnBoardingIntent.GoBack -> {
                 _uiState.update { currentState ->
                     val previousPage = (currentState.currentPage - 1).coerceIn(0, 2)
                     currentState.copy(currentPage = previousPage)
                 }
             }
 
-            OnBoardingIntent.ResetOnBoarding -> {
-                _uiState.value = OnBoardingUiState()
-                nextUserId = 1000
-                initializeAiRecommendations()
+            OnBoardingIntent.Complete -> {
+                // 온보딩 완료 시 필요한 로직 (현재는 비어있음)
+                // 실제로는 여기서 데이터베이스에 저장하거나 다른 작업을 수행할 수 있습니다
             }
         }
     }
