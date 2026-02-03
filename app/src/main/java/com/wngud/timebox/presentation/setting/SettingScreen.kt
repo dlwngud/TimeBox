@@ -22,11 +22,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.wngud.timebox.ui.theme.BorderGray
-import com.wngud.timebox.ui.theme.IconBlue
-import com.wngud.timebox.ui.theme.IconBlueBg
-import com.wngud.timebox.ui.theme.SubtitleGray
-import com.wngud.timebox.ui.theme.SwitchBlue
 import com.wngud.timebox.ui.theme.TimeBoxTheme
 
 /**
@@ -84,12 +79,110 @@ fun SettingScreen(
             modifier = Modifier.padding(paddingValues).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 10.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingItemCard(icon = "🔔", iconColor = IconBlue, iconBgColor = IconBlueBg, title = "알림 받기", control = { Switch(checked = uiState.isNotificationEnabled, onCheckedChange = onNotificationToggle, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.onPrimary, checkedTrackColor = MaterialTheme.colorScheme.primary, uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, uncheckedBorderColor = Color.Transparent)) })
-            SettingItemCard(icon = "⏰", iconColor = Color(0xFF9C27B0), iconBgColor = Color(0xFFF3E5F5), title = "알림 시간", onClick = onTimeClick, control = { Row(verticalAlignment = Alignment.CenterVertically) { Text(text = uiState.notificationTime, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 14.sp); Spacer(modifier = Modifier.width(4.dp)) } })
-            SettingItemCard(icon = "📳", iconColor = Color(0xFF4CAF50), iconBgColor = Color(0xFFE8F5E9), title = "진동", control = { Switch(checked = uiState.isVibrationEnabled, onCheckedChange = onVibrationToggle, colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.onPrimary, checkedTrackColor = MaterialTheme.colorScheme.primary, uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, uncheckedBorderColor = Color.Transparent)) })
-            SettingItemCard(icon = if (uiState.themeMode == "라이트") "☀️" else "🌙", iconColor = Color(0xFFFF9800), iconBgColor = Color(0xFFFFF3E0), title = "테마", onClick = onThemeClick, control = { Text(text = uiState.themeMode, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 14.sp) })
-            SettingItemCard(icon = "📅", iconColor = Color(0xFF9E9E9E), iconBgColor = Color(0xFFEEEEEE), title = "캘린더 연동", subTitle = "곧 오픈돼요", enabled = false, control = { Switch(checked = false, onCheckedChange = null, enabled = false, colors = SwitchDefaults.colors(disabledCheckedTrackColor = Color(0xFFE0E0E0), disabledUncheckedTrackColor = Color(0xFFEEEEEE), disabledUncheckedThumbColor = Color.White)) })
-            SettingItemCard(icon = "ℹ️", iconColor = Color(0xFF616161), iconBgColor = Color(0xFFECEFF1), title = "앱 버전", control = { Text(text = uiState.appVersion, color = Color.Gray, fontSize = 14.sp) })
+            SettingItemCard(
+                icon = "🔔", 
+                iconColor = MaterialTheme.colorScheme.primary, 
+                iconBgColor = MaterialTheme.colorScheme.primaryContainer, 
+                title = "알림 받기", 
+                control = { 
+                    Switch(
+                        checked = uiState.isNotificationEnabled, 
+                        onCheckedChange = onNotificationToggle, 
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary, 
+                            checkedTrackColor = MaterialTheme.colorScheme.primary, 
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, 
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, 
+                            uncheckedBorderColor = Color.Transparent
+                        )
+                    ) 
+                }
+            )
+            SettingItemCard(
+                icon = "⏰", 
+                iconColor = MaterialTheme.colorScheme.secondary, 
+                iconBgColor = MaterialTheme.colorScheme.secondaryContainer, 
+                title = "알림 시간", 
+                onClick = onTimeClick, 
+                control = { 
+                    Row(verticalAlignment = Alignment.CenterVertically) { 
+                        Text(
+                            text = uiState.notificationTime, 
+                            color = MaterialTheme.colorScheme.primary, 
+                            fontWeight = FontWeight.Bold, 
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.width(4.dp)) 
+                    } 
+                }
+            )
+            SettingItemCard(
+                icon = "📳", 
+                iconColor = MaterialTheme.colorScheme.tertiary, 
+                iconBgColor = MaterialTheme.colorScheme.tertiaryContainer, 
+                title = "진동", 
+                control = { 
+                    Switch(
+                        checked = uiState.isVibrationEnabled, 
+                        onCheckedChange = onVibrationToggle, 
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary, 
+                            checkedTrackColor = MaterialTheme.colorScheme.primary, 
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant, 
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, 
+                            uncheckedBorderColor = Color.Transparent
+                        )
+                    ) 
+                }
+            )
+            SettingItemCard(
+                icon = if (uiState.themeMode == "라이트") "☀️" else "🌙", 
+                iconColor = MaterialTheme.colorScheme.primary, 
+                iconBgColor = MaterialTheme.colorScheme.primaryContainer, 
+                title = "테마", 
+                onClick = onThemeClick, 
+                control = { 
+                    Text(
+                        text = uiState.themeMode, 
+                        color = MaterialTheme.colorScheme.primary, 
+                        fontWeight = FontWeight.Bold, 
+                        fontSize = 14.sp
+                    ) 
+                }
+            )
+            SettingItemCard(
+                icon = "📅", 
+                iconColor = MaterialTheme.colorScheme.onSurfaceVariant, 
+                iconBgColor = MaterialTheme.colorScheme.surfaceVariant, 
+                title = "캘린더 연동", 
+                subTitle = "곧 오픈돼요", 
+                enabled = false, 
+                control = { 
+                    Switch(
+                        checked = false, 
+                        onCheckedChange = null, 
+                        enabled = false, 
+                        colors = SwitchDefaults.colors(
+                            disabledCheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, 
+                            disabledUncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, 
+                            disabledUncheckedThumbColor = MaterialTheme.colorScheme.surface
+                        )
+                    ) 
+                }
+            )
+            SettingItemCard(
+                icon = "ℹ️", 
+                iconColor = MaterialTheme.colorScheme.onSurfaceVariant, 
+                iconBgColor = MaterialTheme.colorScheme.surfaceVariant, 
+                title = "앱 버전", 
+                control = { 
+                    Text(
+                        text = uiState.appVersion, 
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                        fontSize = 14.sp
+                    ) 
+                }
+            )
         }
     }
     
@@ -113,7 +206,7 @@ fun SettingItemCard(icon: String, iconColor: Color, iconBgColor: Color, title: S
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(verticalArrangement = Arrangement.Center) {
                     Text(text = title, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, color = if (enabled) MaterialTheme.colorScheme.onSurface else Color.Gray))
-                    if (subTitle != null) Text(text = subTitle, style = MaterialTheme.typography.bodySmall.copy(color = SubtitleGray, fontSize = 12.sp))
+                    if (subTitle != null) Text(text = subTitle, style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp))
                 }
             }
             control()

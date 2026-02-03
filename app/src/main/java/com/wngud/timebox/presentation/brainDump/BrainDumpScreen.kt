@@ -28,9 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.wngud.timebox.ui.theme.DisabledGray
-import com.wngud.timebox.ui.theme.SubtitleGray
-import com.wngud.timebox.ui.theme.SwitchBlue
 import com.wngud.timebox.ui.theme.TimeBoxTheme
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -113,7 +110,7 @@ fun BrainDumpScreen(
                 item {
                     Text(
                         text = "오늘 하고 싶은 일, 걱정, 아이디어…\n자유롭게 적어보세요!",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = DisabledGray, fontSize = 14.sp, lineHeight = 20.sp),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp, lineHeight = 20.sp),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
                     )

@@ -40,14 +40,13 @@ import com.wngud.timebox.data.modal.ScheduleSlot
 import com.wngud.timebox.data.modal.Task
 import com.wngud.timebox.presentation.components.TimeBoxerTopBar
 import com.wngud.timebox.ui.theme.TimeBoxTheme
+import com.wngud.timebox.util.toKoreanDateString
+import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.LocalTime
 import java.time.LocalDate
 import kotlin.math.roundToInt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.graphics.luminance
-import com.wngud.timebox.ui.theme.*
-import com.wngud.timebox.util.toKoreanDateString
-import androidx.hilt.navigation.compose.hiltViewModel
 
 /**
  * 드래그앤드롭 상태 관리 클래스
@@ -271,7 +270,7 @@ fun TimeBoxerContent(
         Text(
             text = "AI가 추천하는 오늘의 Big Three입니다.",
             style = MaterialTheme.typography.bodyMedium,
-            color = DisabledGray
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(16.dp))
         BigThreeSectionNew(tasks, onTaskCheckChanged)
@@ -305,7 +304,7 @@ fun DailySummaryCardNew(stats: DailyStats, onNavigateToStats: () -> Unit) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(text = dateText, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
-                Text(text = "자세히 보기 >", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                Text(text = "자세히 보기 >", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -321,12 +320,12 @@ fun DailySummaryCardNew(stats: DailyStats, onNavigateToStats: () -> Unit) {
 fun StatsItem(icon: String, label: String, value: String) {
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(if (isDarkTheme) Color(0xFF1E3A5F) else EventBlueBg), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(if (isDarkTheme) Color(0xFF1E3A5F) else MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
             Text(text = icon, fontSize = 20.sp)
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column {
-            Text(text = label, style = MaterialTheme.typography.bodySmall, color = DisabledGray)
+            Text(text = label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(text = value, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface)
         }
     }
@@ -368,8 +367,8 @@ fun TimelineSlotCard(slot: ScheduleSlot, modifier: Modifier = Modifier, onSlotLo
     var cardCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val isBeingDragged = dragState.isDragging && dragState.draggedSlot?.id == slot.id
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val backgroundColor = if (isDarkTheme) MaterialTheme.colorScheme.surface else (when (slot.colorType) { EventColorType.BLUE -> SchedulePrimaryBg; EventColorType.GREEN -> ScheduleSecondaryBg; EventColorType.GRAY -> ScheduleTertiaryBg })
-    val borderColor = when (slot.colorType) { EventColorType.BLUE -> if (isDarkTheme) SchedulePrimaryBorderDark else SchedulePrimaryBorder; EventColorType.GREEN -> if (isDarkTheme) ScheduleSecondaryBorderDark else ScheduleSecondaryBorder; else -> Color.Transparent }
+    val backgroundColor = if (isDarkTheme) MaterialTheme.colorScheme.surface else (when (slot.colorType) { EventColorType.BLUE -> MaterialTheme.colorScheme.primaryContainer; EventColorType.GREEN -> MaterialTheme.colorScheme.secondaryContainer; EventColorType.GRAY -> MaterialTheme.colorScheme.surfaceVariant })
+    val borderColor = when (slot.colorType) { EventColorType.BLUE -> MaterialTheme.colorScheme.primary; EventColorType.GREEN -> MaterialTheme.colorScheme.secondary; else -> Color.Transparent }
     Card(
         modifier = modifier.fillMaxWidth().alpha(if (isBeingDragged) 0.3f else 1f).onGloballyPositioned { cardCoords = it }.pointerInput(slot.id) { detectDragGesturesAfterLongPress(onDragStart = { cardCoords?.let { coords -> dragState.startDrag(slot, coords) } }, onDrag = { change, dragAmount -> dragState.updateDragOffset(dragState.dragOffsetY + dragAmount.y); change.consume() }, onDragEnd = { onDragEnd(dragState.draggedSlot, dragState.currentTargetTime); dragState.stopDrag() }, onDragCancel = { dragState.stopDrag() }) },
         shape = RoundedCornerShape(12.dp),
@@ -378,7 +377,7 @@ fun TimelineSlotCard(slot: ScheduleSlot, modifier: Modifier = Modifier, onSlotLo
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(text = slot.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-            if (slot.colorType == EventColorType.BLUE) Icon(imageVector = Icons.Outlined.Star, contentDescription = null, tint = EventBlueBorder, modifier = Modifier.size(24.dp))
+            if (slot.colorType == EventColorType.BLUE) Icon(imageVector = Icons.Outlined.Star, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
         }
     }
 }
@@ -389,7 +388,7 @@ fun HourTimelineRow(hour: Int, slotsForThisHour: List<ScheduleSlot>, onTimeSlotC
     val targetTime = dragState.currentTargetTime
     val isTargetHour = dragState.isDragging && targetTime?.hour == hour
     val isTargetAt00 = isTargetHour && targetTime?.minute == 0
-    val textColor by animateColorAsState(targetValue = if (isTargetAt00) MaterialTheme.colorScheme.primary else DisabledGray, animationSpec = tween(200))
+    val textColor by animateColorAsState(targetValue = if (isTargetAt00) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, animationSpec = tween(200))
     val textAlpha by animateFloatAsState(targetValue = if (isTargetAt00) 1f else 0.6f, animationSpec = tween(200))
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         val formattedTime = when (hour) { 0 -> "오전 12시"; in 1..11 -> "오전 ${hour}시"; 12 -> "오후 12시"; in 13..23 -> "오후 ${hour - 12}시"; else -> "" }

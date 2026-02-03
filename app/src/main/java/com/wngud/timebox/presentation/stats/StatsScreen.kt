@@ -24,7 +24,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wngud.timebox.ui.theme.*
+import com.wngud.timebox.ui.theme.TimeBoxTheme
 
 /**
  * [Stateful] 통계 화면의 Route 컴포저블.
@@ -61,7 +61,7 @@ fun StatsScreen(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = StatsBlue
+                            color = MaterialTheme.colorScheme.primary
                         )
                     )
                 },
@@ -141,31 +141,31 @@ fun AIInsightCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = StatsBlueBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Default.Face, contentDescription = null, tint = StatsBlue, modifier = Modifier.size(24.dp))
+                Icon(imageVector = Icons.Default.Face, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "AI가 분석한 오늘의 인사이트", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = StatsBlue))
+                Text(text = "AI가 분석한 오늘의 인사이트", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary))
             }
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = buildAnnotatedString {
                     append("오늘 아침 9-11시 집중도는 ")
-                    withStyle(style = SpanStyle(color = StatsBlue, fontWeight = FontWeight.Bold)) { append("90%") }
+                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)) { append("90%") }
                     append("로 매우 높았어요! 하지만 오후 3-4시에는 집중력이 60%로 떨어졌네요.")
                 },
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp, color = TextDark)
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurface)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "AI 추천 피크 시간", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = StatsBlue))
+                Text(text = "AI 추천 피크 시간", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Default.Star, contentDescription = null, tint = AccentAmber, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "09:00~11:00", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = AccentAmber))
+                    Text(text = "09:00~11:00", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.tertiary))
                 }
             }
         }
@@ -192,14 +192,14 @@ fun BigThreeItem(icon: String, title: String, badge: String, badgeColor: Color, 
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Text(text = "$targetTime → $actualTime", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, color = TextSecondary))
+            Text(text = "$targetTime → $actualTime", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = if (isPositive) Icons.Default.ThumbUp else Icons.Default.Close, contentDescription = null, tint = if (isPositive) SuccessGreen else AccentRed, modifier = Modifier.size(16.dp))
+                Icon(imageVector = if (isPositive) Icons.Default.ThumbUp else Icons.Default.Close, contentDescription = null, tint = if (isPositive) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "효율 $efficiency", style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = if (isPositive) SuccessGreen else AccentRed))
+                Text(text = "효율 $efficiency", style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold, color = if (isPositive) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error))
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(text = comment, style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, color = TextSecondary))
+                Text(text = comment, style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
             }
         }
     }
@@ -210,19 +210,19 @@ fun AIDailyRecommendation() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = StatsPurpleBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = Icons.Default.Favorite, contentDescription = null, tint = AccentDeepPurple, modifier = Modifier.size(24.dp))
+                Icon(imageVector = Icons.Default.Favorite, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "AI의 내일 제안", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = AccentDeepPurple))
+                Text(text = "AI의 내일 제안", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.secondary))
             }
             Spacer(modifier = Modifier.height(12.dp))
-            Text(text = "내일 운동 블록을 08:30으로 옮기면 더 효율적이에요!", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp, color = TextDark))
+            Text(text = "내일 운동 블록을 08:30으로 옮기면 더 효율적이에요!", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSecondaryContainer))
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { }, colors = ButtonDefaults.buttonColors(containerColor = AccentDeepPurple), shape = RoundedCornerShape(10.dp), modifier = Modifier.height(44.dp)) {
+            Button(onClick = { }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary), shape = RoundedCornerShape(10.dp), modifier = Modifier.height(44.dp)) {
                 Text(text = "바로 적용하기", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))

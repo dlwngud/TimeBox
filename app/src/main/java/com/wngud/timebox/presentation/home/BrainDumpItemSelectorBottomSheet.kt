@@ -20,8 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wngud.timebox.presentation.brainDump.BrainDumpItem
-import com.wngud.timebox.ui.theme.DisabledGray
-import com.wngud.timebox.ui.theme.SwitchBlue
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -65,7 +63,7 @@ fun BrainDumpItemSelectorBottomSheet(
                 Text(
                     text = formatTimeSlot(selectedTimeSlot),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = DisabledGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -79,7 +77,7 @@ fun BrainDumpItemSelectorBottomSheet(
                 placeholder = { 
                     Text(
                         text = "무엇을 할까요?",
-                        color = DisabledGray.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     ) 
                 },
                 modifier = Modifier
@@ -87,8 +85,8 @@ fun BrainDumpItemSelectorBottomSheet(
                     .padding(bottom = 20.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = SwitchBlue,
-                    unfocusedBorderColor = DisabledGray.copy(alpha = 0.3f)
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                 ),
                 singleLine = true
             )
@@ -99,7 +97,7 @@ fun BrainDumpItemSelectorBottomSheet(
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
-                color = DisabledGray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
             
@@ -114,7 +112,7 @@ fun BrainDumpItemSelectorBottomSheet(
                     Text(
                         text = "배치 가능한 아이템이 없습니다.\nBrain Dump에서 새로운 아이템을 추가해보세요!",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = DisabledGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
@@ -152,8 +150,8 @@ fun BrainDumpItemSelectorBottomSheet(
                 },
                 enabled = isEnabled,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SwitchBlue,
-                    disabledContainerColor = DisabledGray
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
@@ -188,9 +186,9 @@ private fun BrainDumpItemOptionCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) SwitchBlue.copy(alpha = 0.1f) else MaterialTheme.colorScheme.background
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.background
         ),
-        border = if (isSelected) BorderStroke(2.dp, SwitchBlue) else BorderStroke(1.dp, DisabledGray.copy(alpha = 0.3f)),
+        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -230,7 +228,7 @@ private fun BrainDumpItemOptionCard(
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontSize = 15.sp,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                            color = if (isSelected) SwitchBlue else MaterialTheme.colorScheme.onSurface
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         ),
                         maxLines = 2
                     )
@@ -242,7 +240,7 @@ private fun BrainDumpItemOptionCard(
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontSize = 11.sp
                             ),
-                            color = DisabledGray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -255,7 +253,7 @@ private fun BrainDumpItemOptionCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(SwitchBlue)
+                        .background(MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
                         text = "✓",

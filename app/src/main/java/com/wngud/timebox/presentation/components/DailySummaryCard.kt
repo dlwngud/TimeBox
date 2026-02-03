@@ -24,16 +24,6 @@ import com.wngud.timebox.data.modal.DailyStats
 import com.wngud.timebox.data.modal.EventColorType
 import com.wngud.timebox.data.modal.ScheduleEvent
 import com.wngud.timebox.data.modal.Task
-import com.wngud.timebox.ui.theme.AccentRed
-import com.wngud.timebox.ui.theme.BackgroundGray
-import com.wngud.timebox.ui.theme.CardWhite
-import com.wngud.timebox.ui.theme.EventBlueBg
-import com.wngud.timebox.ui.theme.EventBlueBorder
-import com.wngud.timebox.ui.theme.EventGreenBg
-import com.wngud.timebox.ui.theme.EventGreenBorder
-import com.wngud.timebox.ui.theme.SuccessGreen
-import com.wngud.timebox.ui.theme.TextBlack
-import com.wngud.timebox.ui.theme.TextGray
 
 @Composable
 fun DailySummaryCard(stats: DailyStats, onClick: () -> Unit) {
@@ -103,7 +93,7 @@ fun BigThreeSection(tasks: List<Task>) {
     var isExpanded by remember { mutableStateOf(true) }
     Card(
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardWhite),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -116,7 +106,7 @@ fun BigThreeSection(tasks: List<Task>) {
                         "Big Three",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = TextBlack
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 IconButton(
@@ -126,7 +116,7 @@ fun BigThreeSection(tasks: List<Task>) {
                     Icon(
                         if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                         "Toggle",
-                        tint = TextBlack
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -146,17 +136,17 @@ fun TaskItem(task: Task) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(BackgroundGray, RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             if (task.isCompleted) Icons.Default.Star else Icons.Outlined.Star,
             null,
-            tint = if (task.isCompleted) SuccessGreen else TextGray
+            tint = if (task.isCompleted) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.width(12.dp))
-        Text(task.title, style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+        Text(task.title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -213,14 +203,14 @@ fun TimelineSection(events: List<ScheduleEvent>) {
                     .offset(x = (-4).dp)
                     .size(8.dp)
                     .clip(CircleShape)
-                    .background(AccentRed)
+                    .background(MaterialTheme.colorScheme.error)
             )
             Box(
                 Modifier
                     .padding(start = 40.dp)
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(AccentRed)
+                    .background(MaterialTheme.colorScheme.error)
                     .align(Alignment.CenterStart)
             )
         }
@@ -230,9 +220,9 @@ fun TimelineSection(events: List<ScheduleEvent>) {
 @Composable
 fun EventCard(event: ScheduleEvent, modifier: Modifier) {
     val (bgColor, borderColor) = when (event.colorType) {
-        EventColorType.GREEN -> EventGreenBg to EventGreenBorder
-        EventColorType.BLUE -> EventBlueBg to EventBlueBorder
-        else -> BackgroundGray to TextGray
+        EventColorType.GREEN -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.secondary
+        EventColorType.BLUE -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.surfaceVariant to MaterialTheme.colorScheme.onSurfaceVariant
     }
     Card(
         modifier = modifier.padding(bottom = 4.dp),
@@ -245,8 +235,8 @@ fun EventCard(event: ScheduleEvent, modifier: Modifier) {
                 .fillMaxSize()
                 .padding(12.dp), verticalArrangement = Arrangement.Center
         ) {
-            Text(event.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextBlack)
-            Text(event.timeRange, fontSize = 12.sp, color = TextGray)
+            Text(event.title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(event.timeRange, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
