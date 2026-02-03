@@ -16,90 +16,84 @@ import androidx.core.view.WindowCompat
 
 /**
  * Material Design 3 다크 모드 컬러 스킴
- * Execution Focus Mode 프로젝트 기반 (#4f47e6)
+ * TimeBox "Zen-Minded Intelligence" 콘셉트
  */
 private val DarkColorScheme = darkColorScheme(
     // Primary
-    primary = DeepFocusIndigo,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainerDark,
-    onPrimaryContainer = OnPrimaryContainerDark,
+    primary = md_theme_dark_primary,
+    onPrimary = md_theme_dark_onPrimary,
+    primaryContainer = md_theme_dark_primaryContainer,
+    onPrimaryContainer = md_theme_dark_onPrimaryContainer,
     
-    // Secondary
-    secondary = ElectricCyan,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainerDark,
-    onSecondaryContainer = OnSecondaryContainerDark,
+    // Secondary (Purple)
+    secondary = Color(0xFFBA68C8),
+    onSecondary = Color(0xFF4A148C),
+    secondaryContainer = Color(0xFF6A1B9A),
+    onSecondaryContainer = Color(0xFFF3E5F5),
     
-    // Tertiary
-    tertiary = TertiaryPurple,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainerDark,
-    onTertiaryContainer = OnTertiaryContainer,
-    
-    // Error
-    error = ErrorRed,
-    onError = OnError,
-    errorContainer = ErrorContainerDark,
-    onErrorContainer = OnErrorContainerDark,
-    
-    // Background
-    background = DarkBackground,
-    onBackground = OnBackgroundDark,
+    // Tertiary (Green)
+    tertiary = Color(0xFF81C784),
+    onTertiary = Color(0xFF1B5E20),
+    tertiaryContainer = Color(0xFF388E3C),
+    onTertiaryContainer = Color(0xFFE8F5E9),
     
     // Surface
-    surface = DarkSurface,
-    onSurface = OnSurfaceDark,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = OnSurfaceVariantDark,
+    surface = md_theme_dark_surface,
+    onSurface = md_theme_dark_onSurface,
+    surfaceVariant = md_theme_dark_surfaceVariant,
+    onSurfaceVariant = md_theme_dark_onSurfaceVariant,
+    
+    // Background (Surface와 동일)
+    background = md_theme_dark_surfaceVariant,
+    onBackground = md_theme_dark_onSurface,
     
     // Outline
-    outline = OutlineDark,
-    outlineVariant = OutlineVariantDark
+    outline = md_theme_dark_outline,
+    
+    // Error
+    error = md_theme_dark_error,
+    onError = md_theme_dark_onError
 )
 
 /**
  * Material Design 3 라이트 모드 컬러 스킴
- * Execution Focus Mode 프로젝트 기반 (#4f47e6)
+ * TimeBox "Zen-Minded Intelligence" 콘셉트
  */
 private val LightColorScheme = lightColorScheme(
     // Primary
-    primary = DeepFocusIndigo,
-    onPrimary = OnPrimary,
-    primaryContainer = PrimaryContainer,
-    onPrimaryContainer = OnPrimaryContainer,
+    primary = md_theme_light_primary,
+    onPrimary = md_theme_light_onPrimary,
+    primaryContainer = md_theme_light_primaryContainer,
+    onPrimaryContainer = md_theme_light_onPrimaryContainer,
     
-    // Secondary
-    secondary = ElectricCyan,
-    onSecondary = OnSecondary,
-    secondaryContainer = SecondaryContainer,
-    onSecondaryContainer = OnSecondaryContainer,
+    // Secondary (Purple)
+    secondary = Color(0xFF9C27B0),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFF3E5F5),
+    onSecondaryContainer = Color(0xFF4A148C),
     
-    // Tertiary
-    tertiary = TertiaryPurple,
-    onTertiary = OnTertiary,
-    tertiaryContainer = TertiaryContainer,
-    onTertiaryContainer = OnTertiaryContainer,
-    
-    // Error
-    error = ErrorRed,
-    onError = OnError,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
-    
-    // Background
-    background = LightBackground,
-    onBackground = OnBackgroundLight,
+    // Tertiary (Green)
+    tertiary = Color(0xFF4CAF50),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFE8F5E9),
+    onTertiaryContainer = Color(0xFF1B5E20),
     
     // Surface
-    surface = LightSurface,
-    onSurface = OnSurfaceLight,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = OnSurfaceVariantLight,
+    surface = md_theme_light_surface,
+    onSurface = md_theme_light_onSurface,
+    surfaceVariant = md_theme_light_surfaceVariant,
+    onSurfaceVariant = md_theme_light_onSurfaceVariant,
+    
+    // Background (Surface와 동일)
+    background = md_theme_light_surfaceVariant,
+    onBackground = md_theme_light_onSurface,
     
     // Outline
-    outline = OutlineLight,
-    outlineVariant = OutlineVariantLight
+    outline = md_theme_light_outline,
+    
+    // Error
+    error = md_theme_light_error,
+    onError = md_theme_light_onError
 )
 
 /**
