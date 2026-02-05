@@ -15,7 +15,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
@@ -35,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.wngud.timebox.ui.theme.TimeBoxTheme
@@ -97,25 +101,46 @@ fun OnBoardingScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Progress Indicator
-            Row(
+            // Top Bar with Back Button and Page Indicator
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                Text(
-                    text = "[${uiState.currentPage + 1}/3]",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                // Back Button (좌측 상단)
+                if (uiState.currentPage > 0) {
+                    IconButton(
+                        onClick = { onIntent(OnBoardingIntent.GoBack) },
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "뒤로가기",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
                 
-                if (uiState.currentPage < 2) {
-                    TextButton(onClick = { onComplete() }) {
-                        Text(
-                            text = "건너뛰기",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                // Page Indicator (중앙)
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(3) { index ->
+                        Box(
+                            modifier = Modifier
+                                .height(4.dp)
+                                .width(if (index == uiState.currentPage) 24.dp else 4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(
+                                    if (index == uiState.currentPage)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                                )
                         )
                     }
                 }
@@ -129,7 +154,6 @@ fun OnBoardingScreen(
                 when (page) {
                     0 -> Phase1DumpScreen(
                         userInputItems = getPhase1Items(),
-                        sampleItems = uiState.sampleItems,
                         inputText = uiState.inputText,
                         canProceed = getPhase1Items().size >= 3,
                         onInputChange = { onIntent(OnBoardingIntent.UpdateInputText(it)) },
@@ -161,7 +185,6 @@ fun OnBoardingScreen(
 @Composable
 fun Phase1DumpScreen(
     userInputItems: List<OnBoardingItem>,
-    sampleItems: List<OnBoardingItem>,
     inputText: String,
     canProceed: Boolean,
     onInputChange: (String) -> Unit,
@@ -171,9 +194,7 @@ fun Phase1DumpScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    val allItems = remember(userInputItems, sampleItems) {
-        (userInputItems + sampleItems).sortedByDescending { it.id }
-    }
+    val allItems = userInputItems
 
     Column(
         modifier = Modifier
@@ -236,6 +257,19 @@ fun Phase1DumpScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp
                 ),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        if (inputText.isNotBlank()) {
+                            onAddItem()
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                        }
+                    }
+                ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 decorationBox = { innerTextField ->
                     if (inputText.isEmpty()) {
@@ -254,7 +288,9 @@ fun Phase1DumpScreen(
 
         // Task List
         LazyColumn(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(allItems) { item ->
@@ -436,16 +472,6 @@ fun Phase2SelectScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        // Back Button
-        TextButton(
-            onClick = onBack,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "← 뒤로",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
 
         Spacer(Modifier.height(24.dp))
     }
@@ -623,16 +649,6 @@ fun Phase3ConfirmScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        // Back Button
-        TextButton(
-            onClick = onBack,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "← 뒤로",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
 
         Spacer(Modifier.height(24.dp))
     }
@@ -689,10 +705,6 @@ fun Phase1DumpScreenPreview() {
             userInputItems = listOf(
                 OnBoardingItem(1, "주간 보고서 작성", isUserInput = true),
                 OnBoardingItem(2, "코드 리뷰 3개", isUserInput = true)
-            ),
-            sampleItems = listOf(
-                OnBoardingItem(3, "운동 30분", isUserInput = false),
-                OnBoardingItem(4, "이메일 답장", isUserInput = false)
             ),
             inputText = "",
             canProceed = true,
