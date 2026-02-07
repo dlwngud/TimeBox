@@ -27,12 +27,6 @@ data class OnBoardingItem(
 data class OnBoardingUiState(
     val inputText: String = "",
     val userInputItems: List<OnBoardingItem> = emptyList(), // 사용자가 입력한 항목들
-    val sampleItems: List<OnBoardingItem> = listOf(
-        OnBoardingItem(1, "이번 주 주간 보고서 초안 작성하기", "업무", "1분 전", false, false),
-        OnBoardingItem(2, "세탁소 들러서 거울 코트 찾아오기", "개인", "3분 전", false, false),
-        OnBoardingItem(3, "안부 전화 드리기", "가족", "15분 전", false, false),
-        OnBoardingItem(4, "어제 회의록 정리", "인프라", "1시간 전", false, false)
-    ),
     val selectedItemIds: Set<Int> = emptySet(), // Big Three로 선택된 항목 ID
     val canProceedToPhase2: Boolean = false, // Phase 2로 진행 가능 여부
     val currentPage: Int = 0 // 현재 온보딩 페이지 (0: Phase1, 1: Phase2, 2: Phase3)
@@ -65,11 +59,11 @@ class OnBoardingViewModel @Inject constructor() : ViewModel() {
 
     private fun initializeAiRecommendations() {
         _uiState.update { currentState ->
-            val updatedSampleItems = currentState.sampleItems.mapIndexed { index, item ->
-                // 첫 번째 예시 항목을 AI 추천으로 설정
-                if (index == 0) item.copy(isAiRecommended = true) else item
+            // 사용자 입력 항목 중 첫 3개를 AI 추천으로 설정
+            val updatedUserItems = currentState.userInputItems.mapIndexed { index, item ->
+                if (index < 3) item.copy(isAiRecommended = true) else item
             }
-            currentState.copy(sampleItems = updatedSampleItems)
+            currentState.copy(userInputItems = updatedUserItems)
         }
     }
 
@@ -150,7 +144,7 @@ class OnBoardingViewModel @Inject constructor() : ViewModel() {
      */
     fun getCombinedItemsForPhase2(): List<OnBoardingItem> {
         val currentState = _uiState.value
-        val allItems = currentState.userInputItems + currentState.sampleItems
+        val allItems = currentState.userInputItems
         
         // AI 추천 항목을 최상단에 배치
         val aiRecommended = allItems.filter { it.isAiRecommended }
