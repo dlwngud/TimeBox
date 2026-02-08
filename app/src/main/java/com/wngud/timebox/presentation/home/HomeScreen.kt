@@ -15,7 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,19 +35,13 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.wngud.timebox.data.modal.DailyStats
 import com.wngud.timebox.data.modal.EventColorType
 import com.wngud.timebox.data.modal.ScheduleSlot
 import com.wngud.timebox.data.modal.Task
-import com.wngud.timebox.presentation.components.TimeBoxerTopBar
 import com.wngud.timebox.ui.theme.TimeBoxTheme
-import com.wngud.timebox.util.toKoreanDateString
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.LocalTime
-import java.time.LocalDate
 import kotlin.math.roundToInt
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.ui.graphics.luminance
 
 /**
  * 드래그앤드롭 상태 관리 클래스
@@ -131,7 +126,7 @@ fun HomeRoute(
 }
 
 /**
- * [Stateless] 홈 화면 UI 컴포저블
+ * [Stateless] 홈 화면 UI 컴포저블 - Big Three Dashboard (Dark Mode)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -157,7 +152,6 @@ fun HomeScreen(
     CompositionLocalProvider(LocalDragAndDropState provides dragState) {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
-            topBar = { TimeBoxerTopBar(onNavigateToSetting) },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = onNavigateToBrainDump,
@@ -173,13 +167,11 @@ fun HomeScreen(
             }
         ) { innerPadding ->
             Box {
-                TimeBoxerContent(
+                BigThreeDashboardContent(
                     modifier = Modifier.padding(innerPadding),
-                    stats = DailyStats("3.5h", 5, 8, 85, 12),
                     tasks = bigThreeTasks,
                     scheduleSlots = scheduleSlots,
-                    onNavigateToStats = onNavigateToStats,
-                    userName = "사용자",
+                    onNavigateToSetting = onNavigateToSetting,
                     onTaskCheckChanged = onTaskCheckChanged,
                     onTimeSlotClick = onTimeSlotClick,
                     onSlotLongClick = onSlotLongClick,
@@ -211,7 +203,7 @@ fun HomeScreen(
                             .alpha(0.8f)
                             .zIndex(100f)
                     ) {
-                        TimelineSlotCard(
+                        TaskCard(
                             slot = slot,
                             onSlotLongClick = {},
                             onDragEnd = { _, _ -> }
@@ -237,14 +229,15 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Big Three Dashboard 메인 콘텐츠
+ */
 @Composable
-fun TimeBoxerContent(
+fun BigThreeDashboardContent(
     modifier: Modifier = Modifier,
-    stats: DailyStats,
     tasks: List<Task>,
     scheduleSlots: List<ScheduleSlot>,
-    onNavigateToStats: () -> Unit,
-    userName: String,
+    onNavigateToSetting: () -> Unit,
     onTaskCheckChanged: (Task, Boolean) -> Unit,
     onTimeSlotClick: (LocalTime) -> Unit,
     onSlotLongClick: (String) -> Unit,
@@ -256,196 +249,342 @@ fun TimeBoxerContent(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 24.dp)
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
-        DailySummaryCardNew(stats, onNavigateToStats)
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "안녕하세요, $userName!",
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "AI가 추천하는 오늘의 Big Three입니다.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
         Spacer(modifier = Modifier.height(16.dp))
-        BigThreeSectionNew(tasks, onTaskCheckChanged)
-        Spacer(modifier = Modifier.height(28.dp))
+        
+        // 헤더
+        DashboardHeader(onNavigateToSetting)
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        // Big Three Priority 섹션
         Text(
-            text = "오늘의 타임라인",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground
+            text = "오늘 꼭 해야할 일",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Medium
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        TimelineSectionNew(
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        PriorityTasksSection(tasks, onTaskCheckChanged)
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        // 오늘의 작업 섹션
+        Text(
+            text = "오늘의 작업",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Medium
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        TodayTasksSection(
             scheduleSlots = scheduleSlots,
             onTimeSlotClick = onTimeSlotClick,
             onSlotLongClick = onSlotLongClick,
             onDragEnd = onDragEnd
         )
+        
         Spacer(modifier = Modifier.height(80.dp))
     }
 }
 
+/**
+ * 대시보드 헤더
+ */
 @Composable
-fun DailySummaryCardNew(stats: DailyStats, onNavigateToStats: () -> Unit) {
-    val currentDate = remember { LocalDate.now() }
-    val dateText = remember(currentDate) { currentDate.toKoreanDateString() }
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable { onNavigateToStats() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+fun DashboardHeader(onNavigateToSetting: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = dateText, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
-                Text(text = "자세히 보기 >", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                StatsItem(icon = "✓", label = "완료된 작업", value = "5/8")
-                Spacer(modifier = Modifier.width(24.dp))
-                StatsItem(icon = "⏳", label = "집중 시간", value = stats.focusTime)
-            }
+        Text(
+            text = "오늘의 Big Three",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontWeight = FontWeight.Bold
+        )
+        
+        IconButton(onClick = onNavigateToSetting) {
+            Icon(
+                imageVector = Icons.Outlined.Settings,
+                contentDescription = "Settings",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
 
+/**
+ * Priority 작업 섹션 (Big Three)
+ */
 @Composable
-fun StatsItem(icon: String, label: String, value: String) {
-    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(if (isDarkTheme) Color(0xFF1E3A5F) else MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-            Text(text = icon, fontSize = 20.sp)
-        }
-        Spacer(modifier = Modifier.width(12.dp))
-        Column {
-            Text(text = label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text = value, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSurface)
-        }
-    }
-}
-
-@Composable
-fun BigThreeSectionNew(tasks: List<Task>, onTaskCheckChanged: (Task, Boolean) -> Unit) {
+fun PriorityTasksSection(tasks: List<Task>, onTaskCheckChanged: (Task, Boolean) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        tasks.forEach { task -> BigThreeTaskItem(task, onTaskCheckChanged) }
+        tasks.take(3).forEachIndexed { index, task ->
+            PriorityTaskCard(
+                priority = index + 1,
+                task = task,
+                onToggleComplete = onTaskCheckChanged
+            )
+        }
     }
 }
 
+/**
+ * Priority 작업 카드
+ */
 @Composable
-fun BigThreeTaskItem(task: Task, onToggleComplete: (Task, Boolean) -> Unit) {
+fun PriorityTaskCard(
+    priority: Int,
+    task: Task,
+    onToggleComplete: (Task, Boolean) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Priority 번호
             Box(
-                modifier = Modifier.size(24.dp).clip(RoundedCornerShape(6.dp)).background(if (task.isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant).clickable { onToggleComplete(task, !task.isCompleted) },
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = if (task.isCompleted) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(18.dp))
+                Text(
+                    text = "$priority",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
             }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            // 작업 제목
+            Text(
+                text = task.title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f)
+            )
+            
             Spacer(modifier = Modifier.width(12.dp))
-            Text(text = task.title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+            
+            // 체크박스
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        if (task.isCompleted) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .clickable { onToggleComplete(task, !task.isCompleted) },
+                contentAlignment = Alignment.Center
+            ) {
+                if (task.isCompleted) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
     }
 }
 
+/**
+ * 오늘의 작업 섹션
+ */
+@Composable
+fun TodayTasksSection(
+    scheduleSlots: List<ScheduleSlot>,
+    onTimeSlotClick: (LocalTime) -> Unit,
+    onSlotLongClick: (String) -> Unit,
+    onDragEnd: (ScheduleSlot?, LocalTime?) -> Unit = { _, _ -> }
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        scheduleSlots.forEach { slot ->
+            TaskCard(
+                slot = slot,
+                onSlotLongClick = onSlotLongClick,
+                onDragEnd = onDragEnd
+            )
+        }
+        
+        // 빈 슬롯 추가 버튼
+        if (scheduleSlots.isEmpty()) {
+            EmptyTasksPlaceholder(onTimeSlotClick)
+        }
+    }
+}
+
+/**
+ * 작업 카드
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TimelineSlotCard(slot: ScheduleSlot, modifier: Modifier = Modifier, onSlotLongClick: (String) -> Unit = {}, onDragEnd: (ScheduleSlot?, LocalTime?) -> Unit = { _, _ -> }) {
+fun TaskCard(
+    slot: ScheduleSlot,
+    modifier: Modifier = Modifier,
+    onSlotLongClick: (String) -> Unit = {},
+    onDragEnd: (ScheduleSlot?, LocalTime?) -> Unit = { _, _ -> }
+) {
     val dragState = LocalDragAndDropState.current
     var cardCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val isBeingDragged = dragState.isDragging && dragState.draggedSlot?.id == slot.id
-    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val backgroundColor = if (isDarkTheme) MaterialTheme.colorScheme.surface else (when (slot.colorType) { EventColorType.BLUE -> MaterialTheme.colorScheme.primaryContainer; EventColorType.GREEN -> MaterialTheme.colorScheme.secondaryContainer; EventColorType.GRAY -> MaterialTheme.colorScheme.surfaceVariant })
-    val borderColor = when (slot.colorType) { EventColorType.BLUE -> MaterialTheme.colorScheme.primary; EventColorType.GREEN -> MaterialTheme.colorScheme.secondary; else -> Color.Transparent }
+    
     Card(
-        modifier = modifier.fillMaxWidth().alpha(if (isBeingDragged) 0.3f else 1f).onGloballyPositioned { cardCoords = it }.pointerInput(slot.id) { detectDragGesturesAfterLongPress(onDragStart = { cardCoords?.let { coords -> dragState.startDrag(slot, coords) } }, onDrag = { change, dragAmount -> dragState.updateDragOffset(dragState.dragOffsetY + dragAmount.y); change.consume() }, onDragEnd = { onDragEnd(dragState.draggedSlot, dragState.currentTargetTime); dragState.stopDrag() }, onDragCancel = { dragState.stopDrag() }) },
+        modifier = modifier
+            .fillMaxWidth()
+            .alpha(if (isBeingDragged) 0.3f else 1f)
+            .onGloballyPositioned { cardCoords = it }
+            .pointerInput(slot.id) {
+                detectDragGesturesAfterLongPress(
+                    onDragStart = {
+                        cardCoords?.let { coords ->
+                            dragState.startDrag(slot, coords)
+                        }
+                    },
+                    onDrag = { change, dragAmount ->
+                        dragState.updateDragOffset(dragState.dragOffsetY + dragAmount.y)
+                        change.consume()
+                    },
+                    onDragEnd = {
+                        onDragEnd(dragState.draggedSlot, dragState.currentTargetTime)
+                        dragState.stopDrag()
+                    },
+                    onDragCancel = {
+                        dragState.stopDrag()
+                    }
+                )
+            },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        border = if (borderColor != Color.Transparent) BorderStroke(2.dp, borderColor) else null
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(text = slot.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-            if (slot.colorType == EventColorType.BLUE) Icon(imageVector = Icons.Outlined.Star, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = slot.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                Text(
+                    text = "${slot.startTime.hour}:${String.format("%02d", slot.startTime.minute)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // 색상 인디케이터
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(
+                        when (slot.colorType) {
+                            EventColorType.BLUE -> MaterialTheme.colorScheme.primary
+                            EventColorType.GREEN -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.surfaceVariant
+                        }
+                    )
+            )
         }
     }
 }
 
+/**
+ * 빈 작업 플레이스홀더
+ */
 @Composable
-fun HourTimelineRow(hour: Int, slotsForThisHour: List<ScheduleSlot>, onTimeSlotClick: (LocalTime) -> Unit, onSlotLongClick: (String) -> Unit, onDragEnd: (ScheduleSlot?, LocalTime?) -> Unit = { _, _ -> }) {
-    val dragState = LocalDragAndDropState.current
-    val targetTime = dragState.currentTargetTime
-    val isTargetHour = dragState.isDragging && targetTime?.hour == hour
-    val isTargetAt00 = isTargetHour && targetTime?.minute == 0
-    val textColor by animateColorAsState(targetValue = if (isTargetAt00) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, animationSpec = tween(200))
-    val textAlpha by animateFloatAsState(targetValue = if (isTargetAt00) 1f else 0.6f, animationSpec = tween(200))
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        val formattedTime = when (hour) { 0 -> "오전 12시"; in 1..11 -> "오전 ${hour}시"; 12 -> "오후 12시"; in 13..23 -> "오후 ${hour - 12}시"; else -> "" }
-        Box(modifier = Modifier.width(90.dp).wrapContentHeight(), contentAlignment = Alignment.CenterStart) {
-            Text(text = formattedTime, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = textColor, modifier = Modifier.alpha(textAlpha))
+fun EmptyTasksPlaceholder(onTimeSlotClick: (LocalTime) -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onTimeSlotClick(LocalTime.now()) },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "작업을 추가하려면 탭하세요",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            TimeSlotRow(hour = hour, minute = 0, slots = slotsForThisHour.filter { it.startTime.minute == 0 }, onTimeSlotClick = onTimeSlotClick, onSlotLongClick = onSlotLongClick, onDragEnd = onDragEnd)
-            TimeSlotRow(hour = hour, minute = 30, slots = slotsForThisHour.filter { it.startTime.minute == 30 }, onTimeSlotClick = onTimeSlotClick, onSlotLongClick = onSlotLongClick, onDragEnd = onDragEnd)
-        }
-    }
-}
-
-@Composable
-fun TimeSlotRow(hour: Int, minute: Int, slots: List<ScheduleSlot>, onTimeSlotClick: (LocalTime) -> Unit, onSlotLongClick: (String) -> Unit, onDragEnd: (ScheduleSlot?, LocalTime?) -> Unit = { _, _ -> }) {
-    if (slots.isNotEmpty()) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            slots.sortedBy { it.startTime }.forEach { slot -> TimelineSlotCard(slot = slot, onSlotLongClick = onSlotLongClick, onDragEnd = onDragEnd) }
-        }
-    } else {
-        Box(modifier = Modifier.fillMaxWidth().height(56.dp).clickable { onTimeSlotClick(LocalTime.of(hour, minute)) }.background(Color.Transparent))
-    }
-}
-
-@Composable
-fun TimelineSectionNew(scheduleSlots: List<ScheduleSlot>, onTimeSlotClick: (LocalTime) -> Unit, onSlotLongClick: (String) -> Unit, onDragEnd: (ScheduleSlot?, LocalTime?) -> Unit = { _, _ -> }) {
-    val dragState = LocalDragAndDropState.current
-    var timelineCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    val currentTime by rememberUpdatedState(LocalTime.now())
-    val slotsByHour = remember(scheduleSlots) { scheduleSlots.groupBy { it.startTime.hour } }
-    Box(modifier = Modifier.fillMaxWidth().onGloballyPositioned { timelineCoords = it }.pointerInput(dragState.isDragging) { if (dragState.isDragging) awaitPointerEventScope { while (true) { val event = awaitPointerEvent(); timelineCoords?.let { coords -> val relativeY = event.changes.first().position.y; val minuteInDay = (relativeY / coords.size.height * 1440).roundToInt().coerceIn(0, 1439); val snappedMinutes = (minuteInDay / 30) * 30; dragState.updateTargetTime(LocalTime.of(snappedMinutes / 60, snappedMinutes % 60)) } } } }) {
-        timelineCoords?.let { coords -> CurrentTimeIndicator(currentTime = currentTime, timelineHeight = coords.size.height) }
-        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) { for (hour in 0..23) HourTimelineRow(hour = hour, slotsForThisHour = slotsByHour[hour] ?: emptyList(), onTimeSlotClick = onTimeSlotClick, onSlotLongClick = onSlotLongClick, onDragEnd = onDragEnd) }
-    }
-}
-
-@Composable
-fun CurrentTimeIndicator(currentTime: LocalTime, timelineHeight: Int) {
-    if (timelineHeight == 0) return
-    val yPosition = remember(currentTime, timelineHeight) { ( (currentTime.hour * 60 + currentTime.minute).toFloat() / 1440 ) * timelineHeight }
-    val indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-    Row(modifier = Modifier.offset(y = with(LocalDensity.current) { yPosition.toDp() }).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.width(90.dp).background(color = indicatorColor, shape = RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 4.dp), contentAlignment = Alignment.Center) {
-            Text(text = String.format("%d:%02d", currentTime.hour, currentTime.minute), style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimary)
-        }
-        Spacer(modifier = Modifier.width(12.dp)); Box(modifier = Modifier.weight(1f).height(2.dp).background(indicatorColor))
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    TimeBoxTheme {
+    TimeBoxTheme(darkTheme = true) {
         HomeScreen(
-            bigThreeTasks = emptyList(),
-            scheduleSlots = emptyList(),
+            bigThreeTasks = listOf(
+                Task(id = "1", title = "프로젝트 기획서 작성", isCompleted = false),
+                Task(id = "2", title = "팀 미팅 준비", isCompleted = true),
+                Task(id = "3", title = "코드 리뷰", isCompleted = false)
+            ),
+            scheduleSlots = listOf(
+                ScheduleSlot(
+                    id = "1",
+                    brainDumpItemId = 1L,
+                    title = "아침 운동",
+                    startTime = LocalTime.of(9, 0),
+                    endTime = LocalTime.of(10, 0),
+                    colorType = EventColorType.BLUE
+                ),
+                ScheduleSlot(
+                    id = "2",
+                    brainDumpItemId = 2L,
+                    title = "독서 시간",
+                    startTime = LocalTime.of(10, 30),
+                    endTime = LocalTime.of(11, 30),
+                    colorType = EventColorType.GREEN
+                )
+            ),
             showBrainDumpSelector = false,
             selectedTimeSlot = null,
             availableBrainDumpItems = emptyList(),

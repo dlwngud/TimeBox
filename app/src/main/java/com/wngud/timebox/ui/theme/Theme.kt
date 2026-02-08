@@ -19,40 +19,40 @@ import androidx.core.view.WindowCompat
  * TimeBox "Zen-Minded Intelligence" 콘셉트
  */
 private val DarkColorScheme = darkColorScheme(
-    // Primary
-    primary = md_theme_dark_primary,
-    onPrimary = md_theme_dark_onPrimary,
-    primaryContainer = md_theme_dark_primaryContainer,
-    onPrimaryContainer = md_theme_dark_onPrimaryContainer,
+    // Primary (Purple Accent)
+    primary = Color(0xFF6366F1),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFF4F46E5),
+    onPrimaryContainer = Color(0xFFE0E7FF),
     
     // Secondary (Purple)
-    secondary = Color(0xFFBA68C8),
-    onSecondary = Color(0xFF4A148C),
-    secondaryContainer = Color(0xFF6A1B9A),
+    secondary = Color(0xFF8B5CF6),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFF6D28D9),
     onSecondaryContainer = Color(0xFFF3E5F5),
     
     // Tertiary (Green)
-    tertiary = Color(0xFF81C784),
-    onTertiary = Color(0xFF1B5E20),
-    tertiaryContainer = Color(0xFF388E3C),
-    onTertiaryContainer = Color(0xFFE8F5E9),
+    tertiary = Color(0xFF10B981),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFF059669),
+    onTertiaryContainer = Color(0xFFD1FAE5),
     
-    // Surface
-    surface = md_theme_dark_surface,
-    onSurface = md_theme_dark_onSurface,
-    surfaceVariant = md_theme_dark_surfaceVariant,
-    onSurfaceVariant = md_theme_dark_onSurfaceVariant,
+    // Surface (Card Background)
+    surface = Color(0xFF1E2332),
+    onSurface = Color(0xFFE5E7EB),
+    surfaceVariant = Color(0xFF252B3D),
+    onSurfaceVariant = Color(0xFF9CA3AF),
     
-    // Background (Surface와 동일)
-    background = md_theme_dark_surfaceVariant,
-    onBackground = md_theme_dark_onSurface,
+    // Background (Very Dark Navy)
+    background = Color(0xFF0A0E1A),
+    onBackground = Color(0xFFE5E7EB),
     
     // Outline
-    outline = md_theme_dark_outline,
+    outline = Color(0xFF374151),
     
     // Error
-    error = md_theme_dark_error,
-    onError = md_theme_dark_onError
+    error = Color(0xFFEF4444),
+    onError = Color(0xFFFFFFFF)
 )
 
 /**
