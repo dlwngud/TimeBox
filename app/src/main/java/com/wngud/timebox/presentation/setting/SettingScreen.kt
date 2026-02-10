@@ -151,26 +151,6 @@ fun SettingScreen(
                 }
             )
             SettingItemCard(
-                icon = "📅", 
-                iconColor = MaterialTheme.colorScheme.onSurfaceVariant, 
-                iconBgColor = MaterialTheme.colorScheme.surfaceVariant, 
-                title = "캘린더 연동", 
-                subTitle = "곧 오픈돼요", 
-                enabled = false, 
-                control = { 
-                    Switch(
-                        checked = false, 
-                        onCheckedChange = null, 
-                        enabled = false, 
-                        colors = SwitchDefaults.colors(
-                            disabledCheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, 
-                            disabledUncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant, 
-                            disabledUncheckedThumbColor = MaterialTheme.colorScheme.surface
-                        )
-                    ) 
-                }
-            )
-            SettingItemCard(
                 icon = "ℹ️", 
                 iconColor = MaterialTheme.colorScheme.onSurfaceVariant, 
                 iconBgColor = MaterialTheme.colorScheme.surfaceVariant, 
